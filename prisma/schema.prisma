@@ -10,8 +10,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Stories {
-  id    Int     @id @default(autoincrement())
-  title String
-  text  String
+model Story {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  image     String
+  createdAt DateTime @default(now())
+
+  categories StoryCategory[]
+}
+
+model Category {
+  id      String @id @default(uuid())
+  name    String @unique
+  icon String
+
+  stories StoryCategory[]
+}
+
+model StoryCategory {
+  storyId    String
+  categoryId String
+
+  story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, categoryId])
 }
