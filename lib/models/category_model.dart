@@ -2,13 +2,17 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'category_model.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable()
 class CategoryModel {
   final String id;
   final String name;
   final String icon;
 
-  CategoryModel({required this.id, required this.name, required this.icon});
+  CategoryModel({
+    required this.id,
+    required this.name,
+    required this.icon,
+  });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) =>
       _$CategoryModelFromJson(json);

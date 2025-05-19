@@ -1,7 +1,6 @@
 import 'package:orm/orm.dart';
 import 'package:stories_server/models/category_model.dart';
 import '../prisma/prisma_client/client.dart';
-import '../prisma/prisma_client/model.dart';
 import '../prisma/prisma_client/prisma.dart';
 
 class CategoryRepository {
@@ -44,7 +43,7 @@ class CategoryRepository {
     return CategoryModel.fromJson(_category.toJson());
   }
 
-  Future<Category?> update({
+  Future<CategoryModel?> update({
     required String id,
     String? name,
     String? icon,
@@ -57,7 +56,7 @@ class CategoryRepository {
       data: PrismaUnion.$1(_categoryUpdate),
       where: CategoryWhereUniqueInput(id: id),
     );
-    return _category;
+    return CategoryModel.fromJson(_category!.toJson());
   }
 
   Future<void> delete({required String id}) async {

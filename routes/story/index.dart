@@ -1,11 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 
-import '../../repositories/category_repository.dart';
-import '../../repositories/story_repository.dart';
-import '../../services/file_service.dart';
+import '../../services/story_service.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   switch (context.request.method) {
@@ -24,32 +21,51 @@ Future<Response> onRequest(RequestContext context) async {
 }
 
 Future<Response> _get(RequestContext context) async {
-  final _storyRepository = context.read<StoryRepository>();
-  final _stories = await _storyRepository.readStories();
-  return Response.json(
-    body: _stories
-        .map(
-          (story) => {
-            'id': story.id,
-            'title': story.title,
-            'content': story.content,
-            'image': story.image,
-            'createdAt': story.createdAt?.toIso8601String(),
-            'categories': story.categories
-                ?.map((storyCategory) => {
-                      'id': storyCategory.category?.id,
-                      'name': storyCategory.category?.name,
-                      'icon': storyCategory.category?.icon,
-                    })
-                .toList(),
-          },
-        )
-        .toList(),
-  );
+  final _storyService = context.read<StoryService>();
+  final _stories = await _storyService.getStories();
+  return Response.json(body: _stories.map((e) => e).toList());
 }
 
 Future<Response> _post(RequestContext context) async {
-  final _storyRepository = context.read<StoryRepository>();
+  final _storyService = context.read<StoryService>();
+
+  final formData = await context.request.formData();
+
+  final title = formData.fields['title'];
+  final content = formData.fields['content'];
+  final image = formData.files['image'];
+
+  if (title == null || content == null || image == null) {
+    return Response.json(
+      statusCode: HttpStatus.badRequest,
+      body: {
+        "error:": "Обязательные поля: 'title', 'content', 'image'",
+      },
+    );
+  }
+  final _story = await _storyService.createStory(
+    title: title,
+    content: content,
+    image: image,
+  );
+
+  return Response.json(body: _story);
+}
+
+Future<Response> _delete(RequestContext context) async {
+  final _storyService = context.read<StoryService>();
+  await _storyService.deleteStories();
+  
+  return Response.json(
+    statusCode: HttpStatus.noContent,
+    body: 'Сказки удалены',
+  );
+}
+
+
+/*
+Future<Response> _post(RequestContext context) async {
+   final _storyAService = context.read<StoryService>();
 
   final formData = await context.request.formData();
 
@@ -109,39 +125,4 @@ Future<Response> _post(RequestContext context) async {
       );
     }
   }
-
-  final story = await _storyRepository.createStory(
-    title: title,
-    content: content,
-    image: await FileService.saveImage(image),
-    categoryIds: categoriesIds,
-  );
-
-  return Response.json(
-    body: {
-      'id': story.id,
-      'title': story.title,
-      'content': story.content,
-      'image': story.image,
-      'createdAt': story.createdAt?.toIso8601String(),
-      'categories': story.categories
-          ?.map(
-            (storyCategory) => {
-              'id': storyCategory.category?.id,
-              'name': storyCategory.category?.name,
-              'icon': storyCategory.category?.icon, 
-            },
-          )
-          .toList(),
-    },
-  );
-}
-
-Future<Response> _delete(RequestContext context) async {
-  final _storiesRepository = context.read<StoryRepository>();
-  await _storiesRepository.deleteStories();
-  return Response.json(
-    statusCode: HttpStatus.noContent,
-    body: 'Все истории удалены',
-  );
-}
+*/

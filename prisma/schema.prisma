@@ -16,7 +16,7 @@ model Story {
   image     String
   createdAt DateTime @default(now())
 
-  categories StoryCategory[]
+  categories StoryCategory[] 
 }
 
 model Category {

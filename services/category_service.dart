@@ -2,7 +2,7 @@ import 'package:dart_frog/dart_frog.dart';
 import 'package:stories_server/models/category_model.dart';
 
 import '../repositories/category_repository.dart';
-import 'file_service.dart';
+import '../lib/utils/file_service.dart';
 
 class CategoryService {
   final CategoryRepository _categoryRepository;
@@ -69,7 +69,7 @@ class CategoryService {
     if (_category == null) {
       throw Exception('Не удалось обновить категорию');
     }
-    return CategoryModel.fromJson(_category.toJson());
+    return _category;
   }
 
   Future<void> deleteCategory({required CategoryModel category}) async {

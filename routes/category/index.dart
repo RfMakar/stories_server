@@ -36,19 +36,11 @@ Future<Response> _post(RequestContext context) async {
     final name = formData.fields['name'];
     final icon = formData.files['icon'];
 
-    if (name == null) {
+    if (name == null || icon == null) {
       return Response.json(
         statusCode: HttpStatus.badRequest,
         body: {
-          "error:": "Введите поле name",
-        },
-      );
-    }
-    if (icon == null) {
-      return Response.json(
-        statusCode: HttpStatus.badRequest,
-        body: {
-          "error:": "Введите поле icon",
+          "error:": "Обязательные поля: 'name', 'icon'",
         },
       );
     }
