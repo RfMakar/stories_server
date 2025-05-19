@@ -1,30 +1,36 @@
 import 'package:orm/orm.dart';
-
-import '../prisma/generated_dart_client/client.dart';
-import '../prisma/generated_dart_client/model.dart';
-import '../prisma/generated_dart_client/prisma.dart';
+import 'package:stories_server/models/category_model.dart';
+import '../prisma/prisma_client/client.dart';
+import '../prisma/prisma_client/model.dart';
+import '../prisma/prisma_client/prisma.dart';
 
 class CategoryRepository {
   final PrismaClient _prismaClient;
 
   CategoryRepository(this._prismaClient);
 
-  Future<List<Category>> readCategories() async {
+  Future<List<CategoryModel>> findMany() async {
     final _categories = await _prismaClient.category.findMany();
-    return _categories.toList();
+    return _categories
+        .map(
+          (e) => CategoryModel.fromJson(e.toJson()),
+        )
+        .toList();
   }
 
-  Future<Category?> readCategory({String? id, String? name}) async {
+  Future<CategoryModel?> findUnique({String? id, String? name}) async {
     final _category = await _prismaClient.category.findUnique(
       where: CategoryWhereUniqueInput(
         id: id,
         name: name,
       ),
     );
-    return _category;
+    return _category != null
+        ? CategoryModel.fromJson(_category.toJson())
+        : null;
   }
 
-  Future<Category> createCategory({
+  Future<CategoryModel> create({
     required String name,
     required String icon,
   }) async {
@@ -32,17 +38,17 @@ class CategoryRepository {
       name: name,
       icon: icon,
     );
-    final category = await _prismaClient.category.create(
+    final _category = await _prismaClient.category.create(
       data: PrismaUnion.$1(_categoryCreate),
     );
-    return category;
+    return CategoryModel.fromJson(_category.toJson());
   }
 
-  Future<Category?> updateCategory(
-    String id,
+  Future<Category?> update({
+    required String id,
     String? name,
     String? icon,
-  ) async {
+  }) async {
     final _categoryUpdate = CategoryUpdateInput(
       name: name != null ? PrismaUnion.$1(name) : null,
       icon: icon != null ? PrismaUnion.$1(icon) : null,
@@ -54,7 +60,7 @@ class CategoryRepository {
     return _category;
   }
 
-  Future<void> deleteCategory(String id) async {
+  Future<void> delete({required String id}) async {
     await _prismaClient.category.delete(
       where: CategoryWhereUniqueInput(
         id: id,
@@ -62,7 +68,7 @@ class CategoryRepository {
     );
   }
 
-  Future<void> deleteCategories() async {
+  Future<void> deleteMany() async {
     await _prismaClient.category.deleteMany();
   }
 }

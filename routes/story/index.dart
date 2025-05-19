@@ -3,8 +3,9 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 
+import '../../repositories/category_repository.dart';
 import '../../repositories/story_repository.dart';
-import '../../service/file_service.dart';
+import '../../services/file_service.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   switch (context.request.method) {
@@ -27,20 +28,22 @@ Future<Response> _get(RequestContext context) async {
   final _stories = await _storyRepository.readStories();
   return Response.json(
     body: _stories
-        .map((story) => {
-              'id': story.id,
-              'title': story.title,
-              'content': story.content,
-              'image': story.image,
-              'createdAt': story.createdAt?.toIso8601String(),
-              'categories': story.categories
-                  ?.map((e) => {
-                        'id': e.category?.id,
-                        'name': e.category?.name,
-                        'icon': e.category?.icon,
-                      })
-                  .toList(),
-            })
+        .map(
+          (story) => {
+            'id': story.id,
+            'title': story.title,
+            'content': story.content,
+            'image': story.image,
+            'createdAt': story.createdAt?.toIso8601String(),
+            'categories': story.categories
+                ?.map((storyCategory) => {
+                      'id': storyCategory.category?.id,
+                      'name': storyCategory.category?.name,
+                      'icon': storyCategory.category?.icon,
+                    })
+                .toList(),
+          },
+        )
         .toList(),
   );
 }
@@ -89,11 +92,25 @@ Future<Response> _post(RequestContext context) async {
     );
   }
 
-  // //CategoryId to List<String>
+  //CategoryId to List<String>
   final categoryJson = jsonDecode(categoryIds) as List<dynamic>;
   final categoriesIds = categoryJson.map((e) => e.toString()).toList();
 
-  final _story = await _storyRepository.createStory(
+  //проверка на наличие категорий
+  final _categoryRepository = await context.read<CategoryRepository>();
+  for (var categoryId in categoriesIds) {
+    final category = await _categoryRepository.findUnique(id: categoryId);
+    if (category == null) {
+      return Response.json(
+        statusCode: HttpStatus.badRequest,
+        body: {
+          "error:": "Категории не существует",
+        },
+      );
+    }
+  }
+
+  final story = await _storyRepository.createStory(
     title: title,
     content: content,
     image: await FileService.saveImage(image),
@@ -102,17 +119,19 @@ Future<Response> _post(RequestContext context) async {
 
   return Response.json(
     body: {
-      'id': _story.id,
-      'title': _story.title,
-      'content': _story.content,
-      'image': _story.image,
-      'createdAt': _story.createdAt?.toIso8601String(),
-      'categories': _story.categories
-          ?.map((e) => {
-                'id': e.category?.id,
-                'name': e.category?.name,
-                'icon': e.category?.icon,
-              })
+      'id': story.id,
+      'title': story.title,
+      'content': story.content,
+      'image': story.image,
+      'createdAt': story.createdAt?.toIso8601String(),
+      'categories': story.categories
+          ?.map(
+            (storyCategory) => {
+              'id': storyCategory.category?.id,
+              'name': storyCategory.category?.name,
+              'icon': storyCategory.category?.icon, 
+            },
+          )
           .toList(),
     },
   );

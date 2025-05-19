@@ -1,8 +1,9 @@
 import 'package:orm/orm.dart';
 
-import '../prisma/generated_dart_client/client.dart';
-import '../prisma/generated_dart_client/model.dart';
-import '../prisma/generated_dart_client/prisma.dart';
+import '../prisma/prisma_client/client.dart';
+import '../prisma/prisma_client/model.dart';
+import '../prisma/prisma_client/prisma.dart';
+
 
 class StoryRepository {
   final PrismaClient _prismaClient;
@@ -29,6 +30,17 @@ class StoryRepository {
   Future<Story?> readStory({required String id}) async {
     final story = await _prismaClient.story.findUnique(
       where: StoryWhereUniqueInput(id: id),
+      include: StoryInclude(
+        categories: PrismaUnion.$2(
+          StoryCategoriesArgs(
+            include: StoryCategoryInclude(
+              category: PrismaUnion.$1(
+                true,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
     return story;
   }

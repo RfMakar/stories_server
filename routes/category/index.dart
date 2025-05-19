@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 
-import '../../repositories/category_repository.dart';
-import '../../service/file_service.dart';
+import '../../services/category_service.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   switch (context.request.method) {
@@ -24,74 +23,55 @@ Future<Response> onRequest(RequestContext context) async {
 }
 
 Future<Response> _get(RequestContext context) async {
-  final _categoryRepository = await context.read<CategoryRepository>();
-  final _categories = await _categoryRepository.readCategories();
-  return Response.json(
-    body: _categories
-        .map(
-          (category) => {
-            "id": category.id,
-            "name": category.name,
-            "icon": category.icon,
-          },
-        )
-        .toList(),
-  );
+  final _categoryRepository = await context.read<CategoryService>();
+  final _categories = await _categoryRepository.getCategories();
+  return Response.json(body: _categories.map((e) => e).toList());
 }
 
 Future<Response> _post(RequestContext context) async {
-  final _categoryRepository = await context.read<CategoryRepository>();
+  try {
+    final _categoryService = await context.read<CategoryService>();
 
-  final formData = await context.request.formData();
-  final name = formData.fields['name'];
-  final icon = formData.files['icon'];
+    final formData = await context.request.formData();
+    final name = formData.fields['name'];
+    final icon = formData.files['icon'];
 
-  if (name == null || name.trim().isEmpty) {
+    if (name == null) {
+      return Response.json(
+        statusCode: HttpStatus.badRequest,
+        body: {
+          "error:": "Введите поле name",
+        },
+      );
+    }
+    if (icon == null) {
+      return Response.json(
+        statusCode: HttpStatus.badRequest,
+        body: {
+          "error:": "Введите поле icon",
+        },
+      );
+    }
+
+    final _category = await _categoryService.createCategory(
+      name: name,
+      icon: icon,
+    );
+
+    return Response.json(body: _category);
+  } catch (e) {
     return Response.json(
       statusCode: HttpStatus.badRequest,
       body: {
-        "error:": "Введите поле name",
+        "error:": e.toString(),
       },
     );
   }
-  if (icon == null) {
-    return Response.json(
-      statusCode: HttpStatus.badRequest,
-      body: {
-        "error:": "Введите поле icon",
-      },
-    );
-  }
-
-  //Проверка уникальности категории
-  final _categoryUnique = await _categoryRepository.readCategory(name: name);
-
-  if (_categoryUnique != null) {
-    return Response.json(
-      statusCode: HttpStatus.badRequest,
-      body: {
-        "error:": " Такая категория существует",
-      },
-    );
-  }
-
-  final _category = await _categoryRepository.createCategory(
-    name: name,
-    icon: await FileService.saveIcon(icon),
-  );
-
-  return Response.json(
-    body: {
-      "id": _category.id,
-      "name": _category.name,
-      "icon": _category.icon,
-    },
-  );
 }
 
 Future<Response> _delete(RequestContext context) async {
-  final _categoryRepository = await context.read<CategoryRepository>();
-  await _categoryRepository.deleteCategories();
+  final _categoryService = await context.read<CategoryService>();
+  await _categoryService.deleteCategories();
 
   return Response.json(
     statusCode: HttpStatus.noContent,

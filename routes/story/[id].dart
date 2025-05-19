@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 
+import '../../prisma/prisma_client/model.dart';
 import '../../repositories/story_repository.dart';
 
 FutureOr<Response> onRequest(RequestContext context, String id) async {
@@ -10,12 +11,17 @@ FutureOr<Response> onRequest(RequestContext context, String id) async {
   final story = await _storiesRepository.readStory(id: id);
 
   if (story == null) {
-    return Response(statusCode: HttpStatus.notFound, body: 'Нет такой сказки');
+    return Response.json(
+      statusCode: HttpStatus.notFound,
+      body: {
+        "error": 'Сказки не существует',
+      },
+    );
   }
 
   switch (context.request.method) {
     case HttpMethod.get:
-    // return _get(context, story);
+      return _get(context, story);
     case HttpMethod.put:
     // return _put(context, storyId);
     case HttpMethod.delete:
@@ -28,9 +34,24 @@ FutureOr<Response> onRequest(RequestContext context, String id) async {
   }
 }
 
-// Future<Response> _get(RequestContext context, Story story) async {
-//   return Response.json(body: story.toJson());
-// }
+Future<Response> _get(RequestContext context, Story story) async {
+  return Response.json(
+    body: {
+      'id': story.id,
+      'title': story.title,
+      'content': story.content,
+      'image': story.image,
+      'createdAt': story.createdAt?.toIso8601String(),
+      'categories': story.categories
+          ?.map((storyCategory) => {
+                'id': storyCategory.category?.id,
+                'name': storyCategory.category?.name,
+                'icon': storyCategory.category?.icon,
+              })
+          .toList(),
+    },
+  );
+}
 
 // Future<Response> _put(RequestContext context, int id) async {
 //   final _storiesRepository = context.read<StoriesRepository>();

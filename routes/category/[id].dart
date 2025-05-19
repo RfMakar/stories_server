@@ -2,94 +2,73 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
+import 'package:stories_server/models/category_model.dart';
 
-import '../../prisma/generated_dart_client/model.dart';
-import '../../repositories/category_repository.dart';
-import '../../service/file_service.dart';
+import '../../services/category_service.dart';
 
 Future<Response> onRequest(RequestContext context, String id) async {
-  final _categoryRepository = await context.read<CategoryRepository>();
-  final _category = await _categoryRepository.readCategory(id: id);
+  try {
+    final _categoryService = await context.read<CategoryService>();
 
-  if (_category == null) {
-    return Response(
-      statusCode: HttpStatus.notFound,
-      body: 'Категории не существует',
-    );
-  }
-  switch (context.request.method) {
-    case HttpMethod.get:
-      return _get(context, _category);
-    case HttpMethod.put:
-      return _put(context, _category);
-    case HttpMethod.delete:
-      return _delete(context, _category);
-    case HttpMethod.head:
-    case HttpMethod.options:
-    case HttpMethod.patch:
-    case HttpMethod.post:
-      return Response(statusCode: HttpStatus.methodNotAllowed);
-  }
-}
+    final _category = await _categoryService.getCategory(id: id);
 
-Future<Response> _get(RequestContext context, Category category) async {
-  return Response.json(
-    body: {
-      "id": category.id,
-      "name": category.name,
-      "icon": category.icon,
-    },
-  );
-}
-
-Future<Response> _put(
-  RequestContext context,
-  Category category,
-) async {
-  final _categoryRepository = await context.read<CategoryRepository>();
-
-  final formData = await context.request.formData();
-  final name = formData.fields['name'];
-  final icon = formData.files['icon'];
-
-  //Проверка имени на уникальность
-  final _categoryUnique = await _categoryRepository.readCategory(name: name);
-
-  if (_categoryUnique != null) {
+    switch (context.request.method) {
+      case HttpMethod.get:
+        return _get(context, _category);
+      case HttpMethod.put:
+        return _put(context, _category.id);
+      case HttpMethod.delete:
+        return _delete(context, _category);
+      case HttpMethod.head:
+      case HttpMethod.options:
+      case HttpMethod.patch:
+      case HttpMethod.post:
+        return Response(statusCode: HttpStatus.methodNotAllowed);
+    }
+  } catch (e) {
     return Response.json(
-      statusCode: HttpStatus.badRequest,
+      statusCode: HttpStatus.notFound,
       body: {
-        "error:": " Такая категория существует",
+        "error:": e.toString(),
       },
     );
   }
-
-  //Удаляет старую иконку с сервера
-  if (icon != null) {
-    final _readCategory =
-        await _categoryRepository.readCategory(id: category.id!);
-    await FileService.delete(_readCategory?.icon);
-  }
-
-  final updateCategory = await _categoryRepository.updateCategory(
-    category.id!,
-    name,
-    icon == null ? null : await FileService.saveIcon(icon),
-  );
-
-  return Response.json(
-    body: {
-      "id": updateCategory?.id,
-      "name": updateCategory?.name,
-      "icon": updateCategory?.icon,
-    },
-  );
 }
 
-Future<Response> _delete(RequestContext context, Category category) async {
-  final _categoryRepository = await context.read<CategoryRepository>();
-  await _categoryRepository.deleteCategory(category.id!);
-  await FileService.delete(category.icon);
+Future<Response> _get(RequestContext context, CategoryModel category) async {
+  return Response.json(body: category.toJson());
+}
+
+Future<Response> _put(RequestContext context, String id) async {
+  try {
+    final _categoryService = await context.read<CategoryService>();
+
+    final formData = await context.request.formData();
+    final name = formData.fields['name'];
+    final icon = formData.files['icon'];
+
+    final _category = await _categoryService.updateCategory(
+      id: id,
+      name: name,
+      icon: icon,
+    );
+
+    return Response.json(body: _category);
+  } catch (e) {
+    return Response.json(
+      statusCode: HttpStatus.notFound,
+      body: {
+        "error:": e.toString(),
+      },
+    );
+  }
+}
+
+Future<Response> _delete(RequestContext context, CategoryModel category) async {
+  final _categoryService = await context.read<CategoryService>();
+  await _categoryService.deleteCategory(
+    category: category,
+  );
   return Response.json(
     statusCode: HttpStatus.noContent,
     body: 'Категория удалена',
