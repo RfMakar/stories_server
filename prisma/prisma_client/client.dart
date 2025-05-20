@@ -1940,11 +1940,11 @@ class PrismaClient extends _i1.BasePrismaClient<PrismaClient> {
   @override
   get $engine => _engine ??= _i5.BinaryEngine(
         schema:
-            'generator client {\n  provider = "dart run orm"\n  output   = "../prisma/prisma_client"\n}\n\ndatasource db {\n  provider = "sqlite"\n  url      = env("DATABASE_URL")\n}\n\nmodel Story {\n  id        String   @id @default(uuid())\n  title     String\n  content   String\n  image     String\n  createdAt DateTime @default(now())\n\n  categories StoryCategory[]\n}\n\nmodel Category {\n  id   String @id @default(uuid())\n  name String @unique\n  icon String\n\n  stories StoryCategory[]\n}\n\nmodel StoryCategory {\n  storyId    String\n  categoryId String\n\n  story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)\n  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)\n\n  @@id([storyId, categoryId])\n}\n',
+            'generator client {\n  provider = "dart run orm"\n  output   = "../prisma/prisma_client"\n}\n\ndatasource db {\n  provider = "sqlite"\n  url      = "file:./dev.sqlite"\n}\n\nmodel Story {\n  id        String   @id @default(uuid())\n  title     String\n  content   String\n  image     String\n  createdAt DateTime @default(now())\n\n  categories StoryCategory[]\n}\n\nmodel Category {\n  id   String @id @default(uuid())\n  name String @unique\n  icon String\n\n  stories StoryCategory[]\n}\n\nmodel StoryCategory {\n  storyId    String\n  categoryId String\n\n  story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)\n  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)\n\n  @@id([storyId, categoryId])\n}\n',
         datasources: const {
           'db': _i1.Datasource(
             _i1.DatasourceType.url,
-            'file:./prisma/dev.sqlite',
+            'file:./dev.sqlite',
           )
         },
         options: $options,

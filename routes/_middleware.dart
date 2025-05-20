@@ -2,17 +2,24 @@ import 'package:dart_frog/dart_frog.dart';
 
 import '../prisma/prisma_client/client.dart';
 import '../repositories/category_repository.dart';
+import '../repositories/story_categories_repository.dart';
 import '../repositories/story_repository.dart';
 import '../services/category_service.dart';
+import '../services/story_category_service.dart';
 import '../services/story_service.dart';
 
-final _prismaClient = PrismaClient()..$connect();
+final _prismaClient = PrismaClient(datasourceUrl: 'file:./prisma/dev.sqlite')
+  ..$connect();
 
 final _categoryRepository = CategoryRepository(_prismaClient);
 final _categoryService = CategoryService(_categoryRepository);
 
 final _storyRepository = StoryRepository(_prismaClient);
 final _storeService = StoryService(_storyRepository);
+
+final _storyCategoriesRepository = StoryCategoriesRepository(_prismaClient);
+final _storeCategoriesService =
+    StoryCategoryService(_storyCategoriesRepository);
 
 Handler middleware(Handler handler) {
   return handler
@@ -22,5 +29,8 @@ Handler middleware(Handler handler) {
       ))
       .use(provider<StoryService>(
         (_) => _storeService,
+      ))
+      .use(provider<StoryCategoryService>(
+        (_) => _storeCategoriesService,
       ));
 }

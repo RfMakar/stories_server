@@ -12,6 +12,9 @@ StoryModel _$StoryModelFromJson(Map<String, dynamic> json) => StoryModel(
       content: json['content'] as String,
       image: json['image'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      categories: (json['categories'] as List<dynamic>)
+          .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$StoryModelToJson(StoryModel instance) =>
@@ -21,4 +24,5 @@ Map<String, dynamic> _$StoryModelToJson(StoryModel instance) =>
       'content': instance.content,
       'image': instance.image,
       'createdAt': instance.createdAt.toIso8601String(),
+      'categories': instance.categories.map((e) => e.toJson()).toList(),
     };

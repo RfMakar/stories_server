@@ -6,17 +6,16 @@ import 'package:stories_server/models/category_model.dart';
 
 import '../../services/category_service.dart';
 
-Future<Response> onRequest(RequestContext context, String id) async {
+Future<Response> onRequest(RequestContext context, String categoryId) async {
   try {
     final _categoryService = await context.read<CategoryService>();
-
-    final _category = await _categoryService.getCategory(id: id);
+    final _category = await _categoryService.getCategory(id: categoryId);
 
     switch (context.request.method) {
       case HttpMethod.get:
         return _get(context, _category);
       case HttpMethod.put:
-        return _put(context, _category.id);
+        return _put(context, categoryId);
       case HttpMethod.delete:
         return _delete(context, _category);
       case HttpMethod.head:

@@ -1,8 +1,8 @@
 import 'package:orm/orm.dart';
+import 'package:stories_server/models/category_model.dart';
 import 'package:stories_server/models/story_model.dart';
 
 import '../prisma/prisma_client/client.dart';
-// import '../prisma/prisma_client/model.dart';
 import '../prisma/prisma_client/prisma.dart';
 
 class StoryRepository {
@@ -16,28 +16,74 @@ class StoryRepository {
         categories: PrismaUnion.$2(
           StoryCategoriesArgs(
             include: StoryCategoryInclude(
-              category: PrismaUnion.$1(
-                true,
-              ),
+              category: PrismaUnion.$1(true),
             ),
           ),
         ),
       ),
     );
-    return _stories
-        .map(
-          (e) => StoryModel.fromJson(
-            e.toJson(),
-          ),
-        )
-        .toList();
+
+    return _stories.map((story) {
+      final categories = story.categories?.map(
+            (storyCategory) {
+              final category = storyCategory.category!;
+              return CategoryModel(
+                id: category.id!,
+                name: category.name!,
+                icon: category.icon!,
+              );
+            },
+          ).toList() ??
+          [];
+
+      return StoryModel(
+        id: story.id!,
+        title: story.title!,
+        content: story.content!,
+        image: story.image!,
+        createdAt: story.createdAt!,
+        categories: categories,
+      );
+    }).toList();
   }
 
   Future<StoryModel?> findUnique({required String id}) async {
     final _story = await _prismaClient.story.findUnique(
       where: StoryWhereUniqueInput(id: id),
+      include: StoryInclude(
+        categories: PrismaUnion.$2(
+          StoryCategoriesArgs(
+            include: StoryCategoryInclude(
+              category: PrismaUnion.$1(true),
+            ),
+          ),
+        ),
+      ),
     );
-    return _story != null ? StoryModel.fromJson(_story.toJson()) : null;
+    if (_story == null) {
+      return null;
+    }
+
+    final _categories = _story.categories?.map(
+          (storyCategory) {
+            final category = storyCategory.category!;
+            return CategoryModel(
+              id: category.id!,
+              name: category.name!,
+              icon: category.icon!,
+            );
+          },
+        ).toList() ??
+        [];
+
+    return StoryModel(
+      id: _story.id!,
+      title: _story.title!,
+      content: _story.content!,
+      image: _story.image!,
+      createdAt: _story.createdAt!,
+      categories: _categories,
+    );
   }
 
   Future<StoryModel> create({
@@ -54,7 +100,26 @@ class StoryRepository {
         ),
       ),
     );
-    return StoryModel.fromJson(_story.toJson());
+    final _categories = _story.categories?.map(
+          (storyCategory) {
+            final category = storyCategory.category!;
+            return CategoryModel(
+              id: category.id!,
+              name: category.name!,
+              icon: category.icon!,
+            );
+          },
+        ).toList() ??
+        [];
+
+    return StoryModel(
+      id: _story.id!,
+      title: _story.title!,
+      content: _story.content!,
+      image: _story.image!,
+      createdAt: _story.createdAt!,
+      categories: _categories,
+    );
   }
 
   Future<StoryModel?> update({
@@ -72,7 +137,29 @@ class StoryRepository {
       data: PrismaUnion.$1(_storyUpdate),
       where: StoryWhereUniqueInput(id: id),
     );
-    return StoryModel.fromJson(_story!.toJson());
+    if (_story == null) {
+      return null;
+    }
+    final _categories = _story.categories?.map(
+          (storyCategory) {
+            final category = storyCategory.category!;
+            return CategoryModel(
+              id: category.id!,
+              name: category.name!,
+              icon: category.icon!,
+            );
+          },
+        ).toList() ??
+        [];
+
+    return StoryModel(
+      id: _story.id!,
+      title: _story.title!,
+      content: _story.content!,
+      image: _story.image!,
+      createdAt: _story.createdAt!,
+      categories: _categories,
+    );
   }
 
   Future<void> delete(String id) async {
@@ -86,74 +173,4 @@ class StoryRepository {
   Future<void> deleteMany() async {
     await _prismaClient.story.deleteMany();
   }
-
-  // Future<Story> create({
-  //   required String title,
-  //   required String content,
-  //   required String image,
-  //   required List<String> categoryIds,
-  // }) async {
-  //   final _story = await _prismaClient.story.create(
-  //     data: PrismaUnion.$1(
-  //       StoryCreateInput(
-  //         title: title,
-  //         content: content,
-  //         image: image,
-  //         categories: StoryCategoryCreateNestedManyWithoutStoryInput(
-  //           createMany: StoryCategoryCreateManyStoryInputEnvelope(
-  //             data: PrismaUnion.$2(categoryIds
-  //                 .map(
-  //                   (e) => StoryCategoryCreateManyStoryInput(
-  //                     categoryId: e,
-  //                   ),
-  //                 )
-  //                 .toList()),
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //     include: StoryInclude(
-  //       categories: PrismaUnion.$2(
-  //         StoryCategoriesArgs(
-  //           include: StoryCategoryInclude(
-  //             category: PrismaUnion.$1(true),
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  //   return _story;
-  // }
-
-  // Future<Story?> update(int id, String? text, String? title) async {
-  //   final story = await _prismaClient.story.update(
-  //     data: PrismaUnion.$2(
-  //       StoryUncheckedUpdateInput(
-  //         text: text != null ? PrismaUnion.$1(text) : null,
-  //         title: title != null ? PrismaUnion.$1(title) : null,
-  //       ),
-  //     ),
-  //     where: StoryWhereUniqueInput(id: id),
-  //   );
-  //   return story;
-  // }
 }
-
-
-// Future<Story?> findUnique({required String id}) async {
-  //   final story = await _prismaClient.story.findUnique(
-  //     where: StoryWhereUniqueInput(id: id),
-  //     include: StoryInclude(
-  //       categories: PrismaUnion.$2(
-  //         StoryCategoriesArgs(
-  //           include: StoryCategoryInclude(
-  //             category: PrismaUnion.$1(
-  //               true,
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  //   return story;
-  // }

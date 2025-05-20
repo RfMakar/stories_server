@@ -11,7 +11,7 @@ CREATE TABLE "Story" (
 CREATE TABLE "Category" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
-    "iconUrl" TEXT NOT NULL
+    "icon" TEXT NOT NULL
 );
 
 -- CreateTable

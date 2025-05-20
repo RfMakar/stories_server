@@ -14,11 +14,15 @@ class StoryService {
   }
 
   Future<StoryModel> getStory({required String id}) async {
-    final _story = await _storyRepository.findUnique(id: id);
-    if (_story == null) {
-      throw Exception('Сказки не существует');
+    try {
+      final _story = await _storyRepository.findUnique(id: id);
+      return _story!;
+    } catch (e) {
+      throw Exception([
+        'Сказки не существует',
+        e.toString(),
+      ]);
     }
-    return _story;
   }
 
   Future<StoryModel> createStory({
@@ -26,15 +30,22 @@ class StoryService {
     required String content,
     required UploadedFile image,
   }) async {
-    //сохранение картинки и получение пути к ней
-    final imagePathSave = await FileService.saveImage(image);
+    try {
+      //сохранение картинки и получение пути к ней
+      final imagePathSave = await FileService.saveImage(image);
 
-    final _createStory = await _storyRepository.create(
-      title: title,
-      content: content,
-      image: imagePathSave,
-    );
-    return StoryModel.fromJson(_createStory.toJson());
+      final _createStory = await _storyRepository.create(
+        title: title,
+        content: content,
+        image: imagePathSave,
+      );
+      return StoryModel.fromJson(_createStory.toJson());
+    } catch (e) {
+      throw Exception([
+        'Сказка не создалась',
+        e.toString(),
+      ]);
+    }
   }
 
   Future<StoryModel?> updateStory({
@@ -43,35 +54,54 @@ class StoryService {
     String? content,
     UploadedFile? image,
   }) async {
-    //Удаляет старую картинку с сервера
-    if (image != null) {
-      final _story = await _storyRepository.findUnique(id: id);
-      await FileService.delete(_story?.image);
-    }
-    final imagePathSave =
-        image == null ? null : await FileService.saveImage(image);
+    try {
+      //Удаляет старую картинку с сервера
+      if (image != null) {
+        final _story = await _storyRepository.findUnique(id: id);
+        await FileService.delete(_story?.image);
+      }
+      final imagePathSave =
+          image == null ? null : await FileService.saveImage(image);
 
-    final _story = await _storyRepository.update(
-      id: id,
-      title: title,
-      content: content,
-      image: imagePathSave,
-    );
-    if (_story == null) {
-      throw Exception('Не удалось обновить категорию');
+      final _story = await _storyRepository.update(
+        id: id,
+        title: title,
+        content: content,
+        image: imagePathSave,
+      );
+
+      return StoryModel.fromJson(_story!.toJson());
+    } catch (e) {
+      throw Exception([
+        'Не удалось обновить категорию',
+        e.toString(),
+      ]);
     }
-    return StoryModel.fromJson(_story.toJson());
   }
 
   Future<void> deleteStory({required StoryModel story}) async {
-    await _storyRepository.delete(
-      story.id,
-    );
-    await FileService.delete(story.image);
+    try {
+      await _storyRepository.delete(
+        story.id,
+      );
+      await FileService.delete(story.image);
+    } catch (e) {
+      throw Exception([
+        'Сказка не удалена',
+        e.toString(),
+      ]);
+    }
   }
 
   Future<void> deleteStories() async {
-    await _storyRepository.deleteMany();
     //удаление картинок не происходит
+    try {
+      await _storyRepository.deleteMany();
+    } catch (e) {
+      throw Exception([
+        'Сказки не удалены',
+        e.toString(),
+      ]);
+    }
   }
 }
