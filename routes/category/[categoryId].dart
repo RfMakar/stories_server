@@ -27,9 +27,7 @@ Future<Response> onRequest(RequestContext context, String categoryId) async {
   } catch (e) {
     return Response.json(
       statusCode: HttpStatus.notFound,
-      body: {
-        "error:": e.toString(),
-      },
+      body: e.toString(),
     );
   }
 }
@@ -38,29 +36,23 @@ Future<Response> _get(RequestContext context, CategoryModel category) async {
   return Response.json(body: category.toJson());
 }
 
-Future<Response> _put(RequestContext context, String id) async {
-  try {
-    final _categoryService = await context.read<CategoryService>();
+Future<Response> _put(RequestContext context, String categoryId) async {
+  final _categoryService = await context.read<CategoryService>();
 
-    final formData = await context.request.formData();
-    final name = formData.fields['name'];
-    final icon = formData.files['icon'];
+  final formData = await context.request.formData();
+  final name = formData.fields['name'];
+  final icon = formData.files['icon'];
 
-    final _category = await _categoryService.updateCategory(
-      id: id,
-      name: name,
-      icon: icon,
-    );
+  final _category = await _categoryService.updateCategory(
+    id: categoryId,
+    name: name,
+    icon: icon,
+  );
 
-    return Response.json(body: _category);
-  } catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.notFound,
-      body: {
-        "error:": e.toString(),
-      },
-    );
-  }
+  return Response.json(
+    statusCode: HttpStatus.created,
+    body: _category,
+  );
 }
 
 Future<Response> _delete(RequestContext context, CategoryModel category) async {
@@ -70,6 +62,5 @@ Future<Response> _delete(RequestContext context, CategoryModel category) async {
   );
   return Response.json(
     statusCode: HttpStatus.noContent,
-    body: 'Категория удалена',
   );
 }

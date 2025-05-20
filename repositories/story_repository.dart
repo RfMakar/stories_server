@@ -133,6 +133,7 @@ class StoryRepository {
       content: content != null ? PrismaUnion.$1(content) : null,
       image: image != null ? PrismaUnion.$1(image) : null,
     );
+    
     final _story = await _prismaClient.story.update(
       data: PrismaUnion.$1(_storyUpdate),
       where: StoryWhereUniqueInput(id: id),

@@ -43,12 +43,7 @@ Future<Response> _post(RequestContext context) async {
   final image = formData.files['image'];
 
   if (title == null || content == null || image == null) {
-    return Response.json(
-      statusCode: HttpStatus.badRequest,
-      body: {
-        "error:": "Обязательные поля: 'title', 'content', 'image'",
-      },
-    );
+    throw Exception(["Обязательные поля: 'title', 'content', 'image'"]);
   }
   final _story = await _storyService.createStory(
     title: title,
