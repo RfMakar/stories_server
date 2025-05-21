@@ -2,7 +2,7 @@ import 'package:dart_frog/dart_frog.dart';
 import 'package:stories_server/models/story_model.dart';
 
 import '../repositories/story_repository.dart';
-import '../lib/utils/file_service.dart';
+import '../lib/core/utils/file_service.dart';
 
 class StoryService {
   final StoryRepository _storyRepository;

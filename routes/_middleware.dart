@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dotenv/dotenv.dart';
+import 'package:stories_server/core/exceptions/app_exceptions.dart';
 
 import '../prisma/prisma_client/client.dart';
 import '../repositories/category_repository.dart';
@@ -48,10 +49,7 @@ Middleware _apiKeyMiddleware() {
       final apiKey = context.request.headers['x-api-key'];
 
       if (apiKey == null || apiKey != env['API_KEY']) {
-        return Response.json(
-          statusCode: 401,
-          body: 'Не верный API ключ',
-        );
+        throw ApiKeyException('Не верный API KEY');
       }
 
       return handler(context);
@@ -64,13 +62,18 @@ Middleware _errorHandlingMiddleware() {
     return (context) async {
       try {
         // Проброс запроса дальше по цепочке
-        final response = await handler(context);
-        return response;
+        return await handler(context);
+      } on AppException catch (e) {
+        return Response.json(
+          statusCode: e.statusCode,
+          body: {
+            'error': e.message,
+          },
+        );
       } catch (e) {
-        // Возвращаем удобный ответ с ошибкой
         return Response.json(
           statusCode: HttpStatus.internalServerError,
-          body: e.toString(),
+          body: {'error': 'Internal server error'},
         );
       }
     };

@@ -1,8 +1,9 @@
 import 'package:dart_frog/dart_frog.dart';
+import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/models/category_model.dart';
 
 import '../repositories/category_repository.dart';
-import '../lib/utils/file_service.dart';
+import '../lib/core/utils/file_service.dart';
 
 class CategoryService {
   final CategoryRepository _categoryRepository;
@@ -13,45 +14,34 @@ class CategoryService {
   }
 
   Future<CategoryModel> getCategory({String? id, String? name}) async {
-    try {
-      final _category = await _categoryRepository.findUnique(
-        id: id,
-        name: name,
-      );
-      return _category!;
-    } catch (e) {
-      throw Exception([
-        'Категории не существует',
-        e.toString(),
-      ]);
+    final _category = await _categoryRepository.findUnique(
+      id: id,
+      name: name,
+    );
+    if (_category == null) {
+      throw NotFoundException('Категория не найдена');
     }
+    return _category;
   }
 
   Future<CategoryModel> createCategory({
     required String name,
     required UploadedFile icon,
   }) async {
-    try {
-      //Проверка уникальности категории
-      final _categoryUnique = await _categoryRepository.findUnique(name: name);
+    //Проверка уникальности категории
+    final _categoryUnique = await _categoryRepository.findUnique(name: name);
 
-      if (_categoryUnique != null) {
-        throw Exception('Такая категория существует');
-      }
-      //сохранение картинки и получение пути к ней
-      final iconPathSave = await FileService.saveIcon(icon);
-
-      final _createCategory = await _categoryRepository.create(
-        name: name,
-        icon: iconPathSave,
-      );
-      return _createCategory;
-    } catch (e) {
-      throw Exception([
-        'Категории не создалась',
-        e.toString(),
-      ]);
+    if (_categoryUnique != null) {
+      throw ConflictException('Категория ${_categoryUnique.name} существует');
     }
+    //сохранение картинки и получение пути к ней
+    final iconPathSave = await FileService.saveIcon(icon);
+
+    final _createCategory = await _categoryRepository.create(
+      name: name,
+      icon: iconPathSave,
+    );
+    return _createCategory;
   }
 
   Future<CategoryModel?> updateCategory({
@@ -59,35 +49,30 @@ class CategoryService {
     String? name,
     UploadedFile? icon,
   }) async {
-    try {
-      //Проверка уникальности категории
-      final _categoryUnique = await _categoryRepository.findUnique(id: id);
-      if (name != null) {
-        if (_categoryUnique?.name == name) {
-          throw Exception('Имя категории должно быть уникальным');
-        }
+    //Проверка уникальности категории
+    final _categoryUnique = await _categoryRepository.findUnique(id: id);
+
+    if (name != null) {
+      if (_categoryUnique?.name == name) {
+        throw ConflictException(
+          'Категория ${_categoryUnique?.name} существует',
+        );
       }
-
-      //Удаляет старую иконку с сервера
-      if (icon != null) {
-        await FileService.delete(_categoryUnique?.icon);
-      }
-      final iconPathSave =
-          icon == null ? null : await FileService.saveIcon(icon);
-
-      final _category = await _categoryRepository.update(
-        id: id,
-        name: name,
-        icon: iconPathSave,
-      );
-
-      return _category;
-    } catch (e) {
-      throw Exception([
-        'Категории не обновилась',
-        e.toString(),
-      ]);
     }
+
+    //Удаляет старую иконку с сервера
+    if (icon != null) {
+      await FileService.delete(_categoryUnique?.icon);
+    }
+    final iconPathSave = icon == null ? null : await FileService.saveIcon(icon);
+
+    final _category = await _categoryRepository.update(
+      id: id,
+      name: name,
+      icon: iconPathSave,
+    );
+
+    return _category;
   }
 
   Future<void> deleteCategory({required CategoryModel category}) async {
@@ -97,10 +82,7 @@ class CategoryService {
       );
       await FileService.delete(category.icon);
     } catch (e) {
-      throw Exception([
-        'Категории не удалилась',
-        e.toString(),
-      ]);
+      throw NotFoundException('Категории ${category.name} не удалилaсь');
     }
   }
 
@@ -109,10 +91,7 @@ class CategoryService {
     try {
       await _categoryRepository.deleteMany();
     } catch (e) {
-      throw Exception([
-        'Категории не удалилbkbcm',
-        e.toString(),
-      ]);
+      throw NotFoundException('Категории не удалились');
     }
   }
 }
