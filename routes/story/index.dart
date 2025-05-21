@@ -41,7 +41,7 @@ Future<Response> _post(RequestContext context) async {
   final title = formData.fields['title'];
   final content = formData.fields['content'];
   final image = formData.files['image'];
-
+  
   if (title == null || content == null || image == null) {
     throw Exception(["Обязательные поля: 'title', 'content', 'image'"]);
   }
