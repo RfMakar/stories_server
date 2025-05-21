@@ -20,5 +20,7 @@ public/uploads/audio/
 public/uploads/icons/
 public/uploads/images/
 
-prisma/dev.sqlite
+prisma/migrations/
+prisma/prisma_client/
+
 *.sqlite
