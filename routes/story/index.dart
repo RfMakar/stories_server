@@ -1,29 +1,23 @@
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
+import 'package:stories_server/core/exceptions/app_exceptions.dart';
 
 import '../../services/story_service.dart';
 
 Future<Response> onRequest(RequestContext context) async {
-  try {
-    switch (context.request.method) {
-      case HttpMethod.get:
-        return _get(context);
-      case HttpMethod.post:
-        return _post(context);
-      case HttpMethod.delete:
-        return _delete(context);
-      case HttpMethod.head:
-      case HttpMethod.options:
-      case HttpMethod.patch:
-      case HttpMethod.put:
-        return Response(statusCode: HttpStatus.methodNotAllowed);
-    }
-  } catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.notFound,
-      body: e.toString(),
-    );
+  switch (context.request.method) {
+    case HttpMethod.get:
+      return _get(context);
+    case HttpMethod.post:
+      return _post(context);
+    case HttpMethod.delete:
+      return _delete(context);
+    case HttpMethod.head:
+    case HttpMethod.options:
+    case HttpMethod.patch:
+    case HttpMethod.put:
+      return Response(statusCode: HttpStatus.methodNotAllowed);
   }
 }
 
@@ -41,9 +35,13 @@ Future<Response> _post(RequestContext context) async {
   final title = formData.fields['title'];
   final content = formData.fields['content'];
   final image = formData.files['image'];
-  
-  if (title == null || content == null || image == null) {
-    throw Exception(["Обязательные поля: 'title', 'content', 'image'"]);
+
+  if (title == null ||
+      title.trim().isEmpty ||
+      content == null ||
+      content.trim().isEmpty ||
+      image == null) {
+    throw ValidationException("Обязательные поля: 'title', 'content', 'image'");
   }
   final _story = await _storyService.createStory(
     title: title,

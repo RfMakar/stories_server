@@ -73,7 +73,9 @@ Middleware _errorHandlingMiddleware() {
       } catch (e) {
         return Response.json(
           statusCode: HttpStatus.internalServerError,
-          body: {'error': 'Internal server error'},
+          body: {
+            'error': 'Internal server error',
+          },
         );
       }
     };

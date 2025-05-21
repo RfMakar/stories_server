@@ -1,3 +1,5 @@
+import 'package:stories_server/core/exceptions/app_exceptions.dart';
+
 import '../repositories/story_categories_repository.dart';
 
 class StoryCategoryService {
@@ -14,10 +16,7 @@ class StoryCategoryService {
         categoryId: categoryId,
       );
     } catch (e) {
-      throw Exception([
-        'Связь не добавлена',
-        e.toString(),
-      ]);
+      throw NotFoundException('Связь уже добавлена');
     }
   }
 
@@ -31,10 +30,7 @@ class StoryCategoryService {
         categoryId: categoryId,
       );
     } catch (e) {
-      throw Exception([
-        'Категория не удалена',
-        e.toString(),
-      ]);
+     throw NotFoundException('Категория не удалена');
     }
   }
 }

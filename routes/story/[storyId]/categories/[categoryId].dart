@@ -11,42 +11,35 @@ Future<Response> onRequest(
   String storyId,
   String categoryId,
 ) async {
-  try {
-    //Проверка наличии сказки
-    final _storyService = context.read<StoryService>();
-    await _storyService.getStory(id: storyId);
+  //Проверка наличии сказки
+  final _storyService = context.read<StoryService>();
+  await _storyService.getStory(id: storyId);
 
-    //Проверка наличие категории
-    final _categoryService = await context.read<CategoryService>();
-    await _categoryService.getCategory(id: categoryId);
+  //Проверка наличие категории
+  final _categoryService = await context.read<CategoryService>();
+  await _categoryService.getCategory(id: categoryId);
 
-    switch (context.request.method) {
-      case HttpMethod.post:
-        return _post(
-          context,
-          storyId,
-          categoryId,
-        );
-      case HttpMethod.delete:
-        return _delete(
-          context,
-          storyId,
-          categoryId,
-        );
-      case HttpMethod.get:
-      case HttpMethod.head:
-      case HttpMethod.options:
-      case HttpMethod.patch:
-      case HttpMethod.put:
-        return Response(
-          statusCode: HttpStatus.methodNotAllowed,
-        );
-    }
-  } catch (e) {
-    return Response.json(
-      statusCode: HttpStatus.notFound,
-      body: e.toString(),
-    );
+  switch (context.request.method) {
+    case HttpMethod.post:
+      return _post(
+        context,
+        storyId,
+        categoryId,
+      );
+    case HttpMethod.delete:
+      return _delete(
+        context,
+        storyId,
+        categoryId,
+      );
+    case HttpMethod.get:
+    case HttpMethod.head:
+    case HttpMethod.options:
+    case HttpMethod.patch:
+    case HttpMethod.put:
+      return Response(
+        statusCode: HttpStatus.methodNotAllowed,
+      );
   }
 }
 
