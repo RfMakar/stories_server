@@ -23,7 +23,13 @@ Future<Response> onRequest(RequestContext context) async {
 
 Future<Response> _get(RequestContext context) async {
   final _storyService = context.read<StoryService>();
-  final _stories = await _storyService.getStories();
+
+  final query = context.request.uri.queryParameters;
+  final categoryId = query['categoryId'];
+
+  final _stories = await _storyService.getStories(
+    categoryId: categoryId,
+  );
   return Response.json(body: _stories.map((e) => e).toList());
 }
 

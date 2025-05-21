@@ -10,8 +10,16 @@ class StoryRepository {
 
   StoryRepository(this._prismaClient);
 
-  Future<List<StoryModel>> findMany() async {
+  Future<List<StoryModel>> findMany({String? categoryId}) async {
     final _stories = await _prismaClient.story.findMany(
+      where: StoryWhereInput(
+          categories: categoryId != null
+              ? StoryCategoryListRelationFilter(
+                  some: StoryCategoryWhereInput(
+                    categoryId: PrismaUnion.$2(categoryId),
+                  ),
+                )
+              : null),
       include: StoryInclude(
         categories: PrismaUnion.$2(
           StoryCategoriesArgs(
@@ -133,7 +141,7 @@ class StoryRepository {
       content: content != null ? PrismaUnion.$1(content) : null,
       image: image != null ? PrismaUnion.$1(image) : null,
     );
-    
+
     final _story = await _prismaClient.story.update(
       data: PrismaUnion.$1(_storyUpdate),
       where: StoryWhereUniqueInput(id: id),

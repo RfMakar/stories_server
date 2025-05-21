@@ -10,8 +10,10 @@ class StoryService {
 
   StoryService(this._storyRepository);
 
-  Future<List<StoryModel>> getStories() async {
-    return await _storyRepository.findMany();
+  Future<List<StoryModel>> getStories({String? categoryId}) async {
+    return await _storyRepository.findMany(
+      categoryId: categoryId,
+    );
   }
 
   Future<StoryModel> getStory({required String id}) async {
