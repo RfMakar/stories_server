@@ -59,7 +59,7 @@ class CategoryService {
       );
       if (_categoryUniqueName != null) {
         throw ConflictException(
-          'Категория ${_categoryUnique?.name} существует',
+          'Категория ${_categoryUniqueName.name} существует',
         );
       }
     }
