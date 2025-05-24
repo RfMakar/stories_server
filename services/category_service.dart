@@ -52,8 +52,12 @@ class CategoryService {
     //Проверка уникальности категории
     final _categoryUnique = await _categoryRepository.findUnique(id: id);
 
+    //Проверка по имени
     if (name != null) {
-      if (_categoryUnique?.name == name) {
+      final _categoryUniqueName = await _categoryRepository.findUnique(
+        name: name,
+      );
+      if (_categoryUniqueName != null) {
         throw ConflictException(
           'Категория ${_categoryUnique?.name} существует',
         );
