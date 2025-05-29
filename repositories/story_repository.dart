@@ -58,17 +58,8 @@ class StoryRepository {
   }
 
   Future<StoryModel?> findUnique({required String id}) async {
-    //Увеличивает счетчик прочтения сказки на 1
-    await _prismaClient.story.update(
-      data: PrismaUnion.$1(StoryUpdateInput(
-        readCount: PrismaUnion.$2(
-          IntFieldUpdateOperationsInput(
-            increment: 1,
-          ),
-        ),
-      )),
-      where: StoryWhereUniqueInput(id: id),
-    );
+    //Запись о чтение сказки
+    await _readRecord(id: id);
     //Возращает сказку
     final _story = await _prismaClient.story.findUnique(
       where: StoryWhereUniqueInput(id: id),
@@ -205,5 +196,31 @@ class StoryRepository {
 
   Future<void> deleteMany() async {
     await _prismaClient.story.deleteMany();
+  }
+
+  Future<void> _readRecord({required String id}) async {
+    //Увеличивает счетчик прочтения сказки на 1
+    await _prismaClient.story.update(
+      data: PrismaUnion.$1(StoryUpdateInput(
+        readCount: PrismaUnion.$2(
+          IntFieldUpdateOperationsInput(
+            increment: 1,
+          ),
+        ),
+      )),
+      where: StoryWhereUniqueInput(id: id),
+    );
+    //Создает запись о чтение сказки
+    await _prismaClient.storyRead.create(
+      data: PrismaUnion.$1(
+        StoryReadCreateInput(
+          story: StoryCreateNestedOneWithoutReadsInput(
+            connect: StoryWhereUniqueInput(
+              id: id,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
