@@ -9,13 +9,16 @@ datasource db {
 }
 
 model Story {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  image     String
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  title       String
+  description String 
+  content     String
+  image       String
+  createdAt   DateTime @default(now())
+  readCount   Int      @default(0)
 
   categories StoryCategory[]
+  reads      StoryRead[]
 }
 
 model Category {
@@ -35,3 +38,12 @@ model StoryCategory {
 
   @@id([storyId, categoryId])
 }
+
+model StoryRead {
+  id       String   @id @default(uuid())
+  storyId  String
+  readAt   DateTime @default(now())
+
+  story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+}
+

@@ -34,12 +34,14 @@ Future<Response> _put(RequestContext context, String id) async {
 
   final formData = await context.request.formData();
   final title = formData.fields['title'];
+  final description = formData.fields['description'];
   final content = formData.fields['content'];
   final image = formData.files['image'];
 
   final _story = await _storyService.updateStory(
     id: id,
     title: title,
+    description: description,
     content: content,
     image: image,
   );

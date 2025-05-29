@@ -39,18 +39,22 @@ Future<Response> _post(RequestContext context) async {
   final formData = await context.request.formData();
 
   final title = formData.fields['title'];
+  final description = formData.fields['description'];
   final content = formData.fields['content'];
   final image = formData.files['image'];
 
   if (title == null ||
       title.trim().isEmpty ||
+      description == null ||
+      description.trim().isEmpty ||
       content == null ||
       content.trim().isEmpty ||
       image == null) {
-    throw ValidationException("Обязательные поля: 'title', 'content', 'image'");
+    throw ValidationException("Обязательные поля: 'title', 'description', 'content', 'image'");
   }
   final _story = await _storyService.createStory(
     title: title,
+    description: description,
     content: content,
     image: image,
   );

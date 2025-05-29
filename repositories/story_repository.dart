@@ -47,15 +47,29 @@ class StoryRepository {
       return StoryModel(
         id: story.id!,
         title: story.title!,
+        description: story.description!,
         content: story.content!,
         image: story.image!,
         createdAt: story.createdAt!,
+        readCount: story.readCount!,
         categories: categories,
       );
     }).toList();
   }
 
   Future<StoryModel?> findUnique({required String id}) async {
+    //Увеличивает счетчик прочтения сказки на 1
+    await _prismaClient.story.update(
+      data: PrismaUnion.$1(StoryUpdateInput(
+        readCount: PrismaUnion.$2(
+          IntFieldUpdateOperationsInput(
+            increment: 1,
+          ),
+        ),
+      )),
+      where: StoryWhereUniqueInput(id: id),
+    );
+    //Возращает сказку
     final _story = await _prismaClient.story.findUnique(
       where: StoryWhereUniqueInput(id: id),
       include: StoryInclude(
@@ -87,15 +101,18 @@ class StoryRepository {
     return StoryModel(
       id: _story.id!,
       title: _story.title!,
+      description: _story.description!,
       content: _story.content!,
       image: _story.image!,
       createdAt: _story.createdAt!,
+      readCount: _story.readCount!,
       categories: _categories,
     );
   }
 
   Future<StoryModel> create({
     required String title,
+    required String description,
     required String content,
     required String image,
   }) async {
@@ -103,6 +120,7 @@ class StoryRepository {
       data: PrismaUnion.$1(
         StoryCreateInput(
           title: title,
+          description: description,
           content: content,
           image: image,
         ),
@@ -123,9 +141,11 @@ class StoryRepository {
     return StoryModel(
       id: _story.id!,
       title: _story.title!,
+      description: _story.description!,
       content: _story.content!,
       image: _story.image!,
       createdAt: _story.createdAt!,
+      readCount: _story.readCount!,
       categories: _categories,
     );
   }
@@ -133,11 +153,13 @@ class StoryRepository {
   Future<StoryModel?> update({
     required String id,
     String? title,
+    String? description,
     String? content,
     String? image,
   }) async {
     final _storyUpdate = StoryUpdateInput(
       title: title != null ? PrismaUnion.$1(title) : null,
+      description: description != null ? PrismaUnion.$1(description) : null,
       content: content != null ? PrismaUnion.$1(content) : null,
       image: image != null ? PrismaUnion.$1(image) : null,
     );
@@ -164,9 +186,11 @@ class StoryRepository {
     return StoryModel(
       id: _story.id!,
       title: _story.title!,
+      description: _story.description!,
       content: _story.content!,
       image: _story.image!,
       createdAt: _story.createdAt!,
+      readCount: _story.readCount!,
       categories: _categories,
     );
   }

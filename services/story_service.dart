@@ -26,6 +26,7 @@ class StoryService {
 
   Future<StoryModel> createStory({
     required String title,
+    required String description,
     required String content,
     required UploadedFile image,
   }) async {
@@ -34,6 +35,7 @@ class StoryService {
 
     final _story = await _storyRepository.create(
       title: title,
+      description: description,
       content: content,
       image: imagePathSave,
     );
@@ -43,6 +45,7 @@ class StoryService {
   Future<StoryModel?> updateStory({
     required String id,
     String? title,
+    String? description,
     String? content,
     UploadedFile? image,
   }) async {
@@ -57,6 +60,7 @@ class StoryService {
     final _story = await _storyRepository.update(
       id: id,
       title: title,
+      description: description,
       content: content,
       image: imagePathSave,
     );
