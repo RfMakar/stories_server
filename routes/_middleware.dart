@@ -7,9 +7,11 @@ import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import '../prisma/prisma_client/client.dart';
 import '../repositories/category_repository.dart';
 import '../repositories/story_categories_repository.dart';
+import '../repositories/story_popular_repository.dart';
 import '../repositories/story_repository.dart';
 import '../services/category_service.dart';
 import '../services/story_category_service.dart';
+import '../services/story_popular_service.dart';
 import '../services/story_service.dart';
 
 var env = DotEnv(includePlatformEnvironment: true)..load();
@@ -24,8 +26,10 @@ final _storyRepository = StoryRepository(_prismaClient);
 final _storeService = StoryService(_storyRepository);
 
 final _storyCategoriesRepository = StoryCategoriesRepository(_prismaClient);
-final _storeCategoriesService =
-    StoryCategoryService(_storyCategoriesRepository);
+final _storeCategoriesService = StoryCategoryService(_storyCategoriesRepository);
+
+final _storyPopularRepository = StoryPopularRepository(_prismaClient);
+final _storyPopularService = StoryPopularService(_storyPopularRepository);
 
 Handler middleware(Handler handler) {
   return handler
@@ -40,6 +44,9 @@ Handler middleware(Handler handler) {
       ))
       .use(provider<StoryCategoryService>(
         (_) => _storeCategoriesService,
+      ))
+      .use(provider<StoryPopularService>(
+        (_) => _storyPopularService,
       ));
 }
 
