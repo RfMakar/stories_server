@@ -8,7 +8,7 @@ import '../../../services/story_service.dart';
 
 FutureOr<Response> onRequest(RequestContext context, String storyId) async {
   final _storyService = context.read<StoryService>();
-  final _story = await _storyService.getStory(id: storyId);
+  final _story = await _storyService.getStory(id: storyId, isRecord: true);
 
   switch (context.request.method) {
     case HttpMethod.get:

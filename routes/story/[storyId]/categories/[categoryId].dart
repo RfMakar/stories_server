@@ -13,7 +13,7 @@ Future<Response> onRequest(
 ) async {
   //Проверка наличии сказки
   final _storyService = context.read<StoryService>();
-  await _storyService.getStory(id: storyId);
+  await _storyService.getStory(id: storyId, isRecord: false);
 
   //Проверка наличие категории
   final _categoryService = await context.read<CategoryService>();

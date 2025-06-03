@@ -16,8 +16,14 @@ class StoryService {
     );
   }
 
-  Future<StoryModel> getStory({required String id}) async {
-    final _story = await _storyRepository.findUnique(id: id);
+  Future<StoryModel> getStory({
+    required String id,
+    required bool isRecord,
+  }) async {
+    final _story = await _storyRepository.findUnique(
+      id: id,
+      isRecord: isRecord,
+    );
     if (_story == null) {
       throw NotFoundException('Сказка с id $id не найдена');
     }
@@ -51,7 +57,10 @@ class StoryService {
   }) async {
     //Удаляет старую картинку с сервера
     if (image != null) {
-      final _story = await _storyRepository.findUnique(id: id);
+      final _story = await _storyRepository.findUnique(
+        id: id,
+        isRecord: false,
+      );
       await FileService.delete(_story?.image);
     }
     final imagePathSave =

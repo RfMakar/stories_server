@@ -57,9 +57,15 @@ class StoryRepository {
     }).toList();
   }
 
-  Future<StoryModel?> findUnique({required String id}) async {
+  Future<StoryModel?> findUnique({
+    required String id,
+    required bool isRecord,
+  }) async {
     //Запись о чтение сказки
-    await _readRecord(id: id);
+    if (isRecord) {
+      await _readRecord(id: id);
+    }
+
     //Возращает сказку
     final _story = await _prismaClient.story.findUnique(
       where: StoryWhereUniqueInput(id: id),
