@@ -1,9 +1,10 @@
 import 'package:dart_frog/dart_frog.dart';
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
+import 'package:stories_server/core/utils/file_service.dart';
 import 'package:stories_server/models/category_model.dart';
 
 import '../repositories/category_repository.dart';
-import '../lib/core/utils/file_service.dart';
+
 
 class CategoryService {
   final CategoryRepository _categoryRepository;
