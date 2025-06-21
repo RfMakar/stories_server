@@ -53,13 +53,10 @@ Handler middleware(Handler handler) {
 Middleware _apiKeyMiddleware() {
   return (Handler handler) {
     return (context) async {
-      final path = context.request.url.path;
+      final path = context.request.uri.path;
 
-      // Пропускаем проверку API ключа для пути /uploads/images/*
-      if (path.startsWith('uploads/images/')) {
-        return handler(context);
-      }
-      if (path.startsWith('uploads/icons/')) {
+      // Разрешаем доступ к /uploads без API ключа
+      if (path.startsWith('/uploads/')) {
         return handler(context);
       }
 
