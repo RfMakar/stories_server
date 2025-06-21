@@ -53,8 +53,14 @@ Handler middleware(Handler handler) {
 Middleware _apiKeyMiddleware() {
   return (Handler handler) {
     return (context) async {
-      final apiKey = context.request.headers['x-api-key'];
+      final path = context.request.url.path;
 
+      // Пропускаем проверку API ключа для пути /uploads/images/*
+      if (path.startsWith('uploads/images/')) {
+        return handler(context);
+      }
+
+      final apiKey = context.request.headers['x-api-key'];
       if (apiKey == null || apiKey != env['API_KEY']) {
         throw ApiKeyException('Не верный API KEY');
       }
