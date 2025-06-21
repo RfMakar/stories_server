@@ -59,6 +59,9 @@ Middleware _apiKeyMiddleware() {
       if (path.startsWith('uploads/images/')) {
         return handler(context);
       }
+      if (path.startsWith('uploads/icons/')) {
+        return handler(context);
+      }
 
       final apiKey = context.request.headers['x-api-key'];
       if (apiKey == null || apiKey != env['API_KEY']) {
