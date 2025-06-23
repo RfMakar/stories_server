@@ -26,7 +26,8 @@ final _storyRepository = StoryRepository(_prismaClient);
 final _storeService = StoryService(_storyRepository);
 
 final _storyCategoriesRepository = StoryCategoriesRepository(_prismaClient);
-final _storeCategoriesService = StoryCategoryService(_storyCategoriesRepository);
+final _storeCategoriesService =
+    StoryCategoryService(_storyCategoriesRepository);
 
 final _storyPopularRepository = StoryPopularRepository(_prismaClient);
 final _storyPopularService = StoryPopularService(_storyPopularRepository);
@@ -88,6 +89,7 @@ Middleware _errorHandlingMiddleware() {
           statusCode: HttpStatus.internalServerError,
           body: {
             'error': 'Internal server error',
+            'mes': e.toString(),
           },
         );
       }
