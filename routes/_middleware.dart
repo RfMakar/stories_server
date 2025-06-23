@@ -3,23 +3,27 @@ import 'dart:io';
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
+import 'package:stories_server/data/database_sevice.dart';
+import 'package:stories_server/repositories/category_repository.dart';
+import 'package:stories_server/services/category_service.dart';
 
 import '../prisma/prisma_client/client.dart';
-import '../repositories/category_repository.dart';
 import '../repositories/story_categories_repository.dart';
 import '../repositories/story_popular_repository.dart';
 import '../repositories/story_repository.dart';
-import '../services/category_service.dart';
 import '../services/story_category_service.dart';
 import '../services/story_popular_service.dart';
 import '../services/story_service.dart';
 
 var env = DotEnv(includePlatformEnvironment: true)..load();
 
+final _datebaseService = DatabaseService();
+bool _initialized = false;
+
 final _prismaClient = PrismaClient(datasourceUrl: 'file:./prisma/dev.sqlite')
   ..$connect();
 
-final _categoryRepository = CategoryRepository(_prismaClient);
+final _categoryRepository = CategoryRepository(_datebaseService);
 final _categoryService = CategoryService(_categoryRepository);
 
 final _storyRepository = StoryRepository(_prismaClient);
@@ -33,6 +37,10 @@ final _storyPopularRepository = StoryPopularRepository(_prismaClient);
 final _storyPopularService = StoryPopularService(_storyPopularRepository);
 
 Handler middleware(Handler handler) {
+  if (!_initialized) {
+    _initialized = true;
+    _datebaseService.init(); // Только один раз
+  }
   return handler
       .use(requestLogger())
       .use(_apiKeyMiddleware())
