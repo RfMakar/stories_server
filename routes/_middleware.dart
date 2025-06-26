@@ -5,35 +5,30 @@ import 'package:dotenv/dotenv.dart';
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/data/database_sevice.dart';
 import 'package:stories_server/repositories/category_repository.dart';
+import 'package:stories_server/repositories/story_categories_repository.dart';
+import 'package:stories_server/repositories/story_popular_repository.dart';
+import 'package:stories_server/repositories/story_repository.dart';
 import 'package:stories_server/services/category_service.dart';
-
-import '../prisma/prisma_client/client.dart';
-import '../repositories/story_categories_repository.dart';
-import '../repositories/story_popular_repository.dart';
-import '../repositories/story_repository.dart';
-import '../services/story_category_service.dart';
-import '../services/story_popular_service.dart';
-import '../services/story_service.dart';
+import 'package:stories_server/services/story_category_service.dart';
+import 'package:stories_server/services/story_popular_service.dart';
+import 'package:stories_server/services/story_service.dart';
 
 var env = DotEnv(includePlatformEnvironment: true)..load();
 
 final _datebaseService = DatabaseService();
 bool _initialized = false;
 
-final _prismaClient = PrismaClient(datasourceUrl: 'file:./prisma/dev.sqlite')
-  ..$connect();
-
 final _categoryRepository = CategoryRepository(_datebaseService);
 final _categoryService = CategoryService(_categoryRepository);
 
-final _storyRepository = StoryRepository(_prismaClient);
+final _storyRepository = StoryRepository(_datebaseService);
 final _storeService = StoryService(_storyRepository);
 
-final _storyCategoriesRepository = StoryCategoriesRepository(_prismaClient);
+final _storyCategoriesRepository = StoryCategoriesRepository(_datebaseService);
 final _storeCategoriesService =
     StoryCategoryService(_storyCategoriesRepository);
 
-final _storyPopularRepository = StoryPopularRepository(_prismaClient);
+final _storyPopularRepository = StoryPopularRepository(_datebaseService);
 final _storyPopularService = StoryPopularService(_storyPopularRepository);
 
 Handler middleware(Handler handler) {

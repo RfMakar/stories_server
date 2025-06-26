@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:stories_server/services/category_service.dart';
+import 'package:stories_server/services/story_category_service.dart';
+import 'package:stories_server/services/story_service.dart';
 
-import '../../../../services/story_category_service.dart';
-import '../../../../services/story_service.dart';
 
 Future<Response> onRequest(
   RequestContext context,

@@ -1,6 +1,5 @@
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
-
-import '../repositories/story_categories_repository.dart';
+import 'package:stories_server/repositories/story_categories_repository.dart';
 
 class StoryCategoryService {
   final StoryCategoriesRepository _storyCategoriesRepository;

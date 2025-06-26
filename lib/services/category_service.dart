@@ -2,8 +2,8 @@ import 'package:dart_frog/dart_frog.dart';
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/core/utils/file_service.dart';
 import 'package:stories_server/models/category_model.dart';
+import 'package:stories_server/repositories/category_repository.dart';
 
-import '../repositories/category_repository.dart';
 
 
 class CategoryService {

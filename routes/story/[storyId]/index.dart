@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:stories_server/models/story_model.dart';
+import 'package:stories_server/services/story_service.dart';
 
-import '../../../services/story_service.dart';
 
 FutureOr<Response> onRequest(RequestContext context, String storyId) async {
   final _storyService = context.read<StoryService>();
