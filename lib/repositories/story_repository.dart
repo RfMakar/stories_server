@@ -72,13 +72,15 @@ class StoryRepository {
     }).toList();
   }
 
-  Future<StoryModel?> findUnique(
-      {required String id, bool isRecord = false}) async {
+  Future<StoryModel?> findUnique({
+    required String id,
+    bool isRecord = false,
+  }) async {
     final db = _databaseService.db;
 
     // Запись прочтения
     if (isRecord) {
-      await _readRecord(id: id); // реализуй этот метод отдельно
+      await _readRecord(id: id); 
     }
 
     // Получение истории и её категорий

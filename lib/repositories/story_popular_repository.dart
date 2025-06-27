@@ -94,16 +94,18 @@ class StoryPopularRepository {
               ))
           .toList();
 
-      stories.add(StoryModel(
-        id: row['id'] as String,
-        title: row['title'] as String,
-        description: row['description'] as String,
-        content: row['content'] as String,
-        image: row['image'] as String,
-        createdAt: DateTime.parse(row['created_at'] as String),
-        readCount: row['read_count'] as int,
-        categories: categories,
-      ));
+      stories.add(
+        StoryModel(
+          id: row['id'] as String,
+          title: row['title'] as String,
+          description: row['description'] as String,
+          content: row['content'] as String,
+          image: row['image'] as String,
+          createdAt: DateTime.parse(row['created_at'] as String),
+          readCount: row['read_count'] as int,
+          categories: categories,
+        ),
+      );
     }
 
     return stories;
@@ -131,11 +133,13 @@ class StoryPopularRepository {
     ''', [row['id']]);
 
       final categories = categoriesResult
-          .map((catRow) => CategoryModel(
-                id: catRow['id'] as String,
-                name: catRow['name'] as String,
-                icon: catRow['icon'] as String,
-              ))
+          .map(
+            (catRow) => CategoryModel(
+              id: catRow['id'] as String,
+              name: catRow['name'] as String,
+              icon: catRow['icon'] as String,
+            ),
+          )
           .toList();
 
       stories.add(StoryModel(
