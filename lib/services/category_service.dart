@@ -100,10 +100,5 @@ class CategoryService {
     }
   }
 
-  Future<List<CategoryModel>> searchCategories(String query) async {
-    if (query.trim().isEmpty) {
-      return [];
-    }
-    return await _categoryRepository.searchCategories(query);
-  }
+  
 }

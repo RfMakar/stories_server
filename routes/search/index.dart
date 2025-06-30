@@ -3,8 +3,7 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
-import 'package:stories_server/services/category_service.dart';
-import 'package:stories_server/services/story_service.dart';
+import 'package:stories_server/services/search_service.dart';
 
 FutureOr<Response> onRequest(RequestContext context) async {
   switch (context.request.method) {
@@ -21,8 +20,7 @@ FutureOr<Response> onRequest(RequestContext context) async {
 }
 
 Future<Response> _get(RequestContext context) async {
-  final _storyService = context.read<StoryService>();
-  final _categoryService = await context.read<CategoryService>();
+  final _searchService = context.read<SearchService>();
 
   final queryParams = context.request.uri.queryParameters;
   final query = queryParams['query'];
@@ -36,10 +34,10 @@ Future<Response> _get(RequestContext context) async {
     throw ValidationException("Укажите тип поиска через ?type=...");
   }
   if (type == 'story') {
-    final stories = await _storyService.searchStories(query);
+    final stories = await _searchService.searchStories(query);
     return Response.json(body: stories.map((e) => e).toList());
   } else if (type == 'category') {
-    final categories = await _categoryService.searchCategories(query);
+    final categories = await _searchService.searchCategories(query);
     return Response.json(body: categories.map((e) => e).toList());
   } else {
     throw ValidationException("Укажите верный type: 'story' or 'category'");

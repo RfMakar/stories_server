@@ -114,13 +114,5 @@ class CategoryRepository {
     await _databaseService.db.delete('categories');
   }
 
-  Future<List<CategoryModel>> searchCategories(String query) async {
-    final result = await _databaseService.db.query(
-      'categories',
-      where: 'name LIKE ?',
-      whereArgs: ['%$query%'],
-    );
-
-    return result.map((row) => CategoryModel.fromJson(row)).toList();
-  }
+  
 }

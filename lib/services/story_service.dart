@@ -96,10 +96,5 @@ class StoryService {
     }
   }
 
-  Future<List<StoryModel>> searchStories(String query) async {
-    if (query.trim().isEmpty) {
-      return [];
-    }
-    return await _storyRepository.search(query);
-  }
+ 
 }
