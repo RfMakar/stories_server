@@ -99,4 +99,11 @@ class CategoryService {
       throw NotFoundException('Категории не удалились');
     }
   }
+
+  Future<List<CategoryModel>> searchCategories(String query) async {
+    if (query.trim().isEmpty) {
+      return [];
+    }
+    return await _categoryRepository.searchCategories(query);
+  }
 }

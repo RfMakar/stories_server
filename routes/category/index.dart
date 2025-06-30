@@ -24,8 +24,8 @@ Future<Response> onRequest(RequestContext context) async {
 }
 
 Future<Response> _get(RequestContext context) async {
-  final _categoryRepository = await context.read<CategoryService>();
-  final _categories = await _categoryRepository.getCategories();
+  final _categoryService = await context.read<CategoryService>();
+  final _categories = await _categoryService.getCategories();
 
   return Response.json(
     body: _categories.map((e) => e).toList(),
