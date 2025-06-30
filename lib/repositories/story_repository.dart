@@ -132,6 +132,7 @@ class StoryRepository {
     await db.insert('stories', {
       'id': id,
       'title': title,
+      'title_lower': title.toLowerCase(),
       'description': description,
       'content': content,
       'image': image,
@@ -171,6 +172,7 @@ class StoryRepository {
 
     final values = <String, Object?>{};
     if (title != null) values['title'] = title;
+    if (title != null) values['title_lower'] = title.toLowerCase();
     if (description != null) values['description'] = description;
     if (content != null) values['content'] = content;
     if (image != null) values['image'] = image;

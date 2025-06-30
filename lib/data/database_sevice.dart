@@ -30,6 +30,7 @@ class DatabaseService {
       CREATE TABLE IF NOT EXISTS stories (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
+      title_lower TEXT NOT NULL,
       description TEXT NOT NULL,
       content TEXT NOT NULL,
       image TEXT NOT NULL,
@@ -42,6 +43,7 @@ class DatabaseService {
       CREATE TABLE IF NOT EXISTS categories (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL UNIQUE,
+      name_lower TEXT NOT NULL,
       icon TEXT NOT NULL
       );
       ''');
@@ -67,11 +69,23 @@ class DatabaseService {
       await _db.execute('PRAGMA user_version = 1');
     }
 
-    // if (currentVersion < 2) {
-    //   // Пример миграции до версии 2: добавить email в users
-    //   await _db.execute('ALTER TABLE users ADD COLUMN email TEXT');
-    //   await _db.execute('PRAGMA migration_version = 2');
-    // }
+    if (currentVersion == 1) {
+      // Миграция для добавления поля title_lower в существующую таблицу
+      await _db.execute(
+        'ALTER TABLE stories ADD COLUMN title_lower TEXT NOT NULL DEFAULT ""',
+      );
+      await _db.execute(
+        'ALTER TABLE categories ADD COLUMN name_lower TEXT NOT NULL DEFAULT ""',
+      );
+      // Заполняем title_lower для существующих записей
+      await _db.execute('''
+      UPDATE stories SET title_lower = title;
+      ''');
+      await _db.execute('''
+      UPDATE categories SET name_lower = name;
+      ''');
+      await _db.execute('PRAGMA migration_version = 2');
+    }
   }
 
   Database get db => _db;

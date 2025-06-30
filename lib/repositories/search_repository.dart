@@ -8,10 +8,12 @@ class SearchRepository {
   SearchRepository(this._databaseService);
 
   Future<List<CategoryModel>> searchCategories(String query) async {
+    final loweredQuery = query.toLowerCase();
+
     final result = await _databaseService.db.query(
       'categories',
-      where: 'name LIKE ?',
-      whereArgs: ['%$query%'],
+      where: 'name_lower LIKE ?',
+      whereArgs: ['%$loweredQuery%'],
     );
 
     return result.map((row) => CategoryModel.fromJson(row)).toList();
@@ -19,11 +21,13 @@ class SearchRepository {
 
   Future<List<StoryModel>> searchStories(String query) async {
     final db = _databaseService.db;
+    final loweredQuery = query.toLowerCase();
+
     final results = await db.rawQuery('''
     SELECT * FROM stories
-    WHERE title LIKE ? OR description LIKE ?
+    WHERE title_lower LIKE ?
     ORDER BY created_at DESC
-  ''', ['%$query%', '%$query%']);
+  ''', ['%$loweredQuery%']);
 
     final stories = <StoryModel>[];
 

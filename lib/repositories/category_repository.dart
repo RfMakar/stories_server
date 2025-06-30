@@ -51,6 +51,7 @@ class CategoryRepository {
     final values = {
       'id': id,
       'name': name,
+      'name_lower': name.toLowerCase(),
       'icon': icon,
     };
 
@@ -80,6 +81,7 @@ class CategoryRepository {
 
     final values = <String, Object?>{};
     if (name != null) values['name'] = name;
+    if (name != null) values['name_lower'] = name.toLowerCase();
     if (icon != null) values['icon'] = icon;
 
     final count = await _databaseService.db.update(
@@ -113,6 +115,4 @@ class CategoryRepository {
   Future<void> deleteMany() async {
     await _databaseService.db.delete('categories');
   }
-
-  
 }
