@@ -1,4 +1,3 @@
-import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/repositories/story_categories_repository.dart';
 
 class StoryCategoryService {
@@ -9,27 +8,19 @@ class StoryCategoryService {
     required String storyId,
     required String categoryId,
   }) async {
-    try {
-      await _storyCategoriesRepository.create(
-        storyId: storyId,
-        categoryId: categoryId,
-      );
-    } catch (e) {
-      throw NotFoundException('Связь уже добавлена');
-    }
+    await _storyCategoriesRepository.create(
+      storyId: storyId,
+      categoryId: categoryId,
+    );
   }
 
   Future<void> deleteCategoryToStory({
     required String storyId,
     required String categoryId,
   }) async {
-    try {
-      await _storyCategoriesRepository.delete(
-        storyId: storyId,
-        categoryId: categoryId,
-      );
-    } catch (e) {
-     throw NotFoundException('Категория не удалена');
-    }
+    await _storyCategoriesRepository.delete(
+      storyId: storyId,
+      categoryId: categoryId,
+    );
   }
 }

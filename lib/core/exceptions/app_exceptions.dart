@@ -13,7 +13,10 @@ abstract class AppException implements Exception {
   String toString() => '$runtimeType: $message';
 }
 
-
+class DBaseException extends AppException {
+  DBaseException(String message)
+      : super(message, HttpStatus.internalServerError);
+}
 
 class NotFoundException extends AppException {
   NotFoundException(String message)

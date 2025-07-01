@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
+import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/models/category_model.dart';
 import 'package:stories_server/services/category_service.dart';
 
@@ -37,6 +38,10 @@ Future<Response> _put(RequestContext context, String categoryId) async {
   final name = formData.fields['name'];
   final icon = formData.files['icon'];
 
+  if ((name == null || name.trim().isEmpty) && icon == null) {
+    throw ValidationException("Нужно указать хотя бы 'name' или 'icon' для обновления");
+  }
+
   final _category = await _categoryService.updateCategory(
     id: categoryId,
     name: name,
@@ -44,7 +49,7 @@ Future<Response> _put(RequestContext context, String categoryId) async {
   );
 
   return Response.json(
-    statusCode: HttpStatus.created,
+    statusCode: HttpStatus.ok,
     body: _category,
   );
 }

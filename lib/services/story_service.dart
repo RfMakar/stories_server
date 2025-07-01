@@ -1,5 +1,4 @@
 import 'package:dart_frog/dart_frog.dart';
-import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/core/utils/file_service.dart';
 import 'package:stories_server/models/story_model.dart';
 import 'package:stories_server/repositories/story_repository.dart';
@@ -10,7 +9,7 @@ class StoryService {
   StoryService(this._storyRepository);
 
   Future<List<StoryModel>> getStories({String? categoryId}) async {
-    return await _storyRepository.findMany(
+    return await _storyRepository.getAllByCategoryId(
       categoryId: categoryId,
     );
   }
@@ -19,13 +18,10 @@ class StoryService {
     required String id,
     required bool isRecord,
   }) async {
-    final _story = await _storyRepository.findUnique(
+    final _story = await _storyRepository.getById(
       id: id,
       isRecord: isRecord,
     );
-    if (_story == null) {
-      throw NotFoundException('Сказка с id $id не найдена');
-    }
     return _story;
   }
 
@@ -56,11 +52,11 @@ class StoryService {
   }) async {
     //Удаляет старую картинку с сервера
     if (image != null) {
-      final _story = await _storyRepository.findUnique(
+      final _story = await _storyRepository.getById(
         id: id,
         isRecord: false,
       );
-      await FileService.delete(_story?.image);
+      await FileService.delete(_story.image);
     }
     final imagePathSave =
         image == null ? null : await FileService.saveImage(image);
@@ -77,24 +73,14 @@ class StoryService {
   }
 
   Future<void> deleteStory({required StoryModel story}) async {
-    try {
-      await _storyRepository.delete(
-        story.id,
-      );
-      await FileService.delete(story.image);
-    } catch (e) {
-      throw NotFoundException('Сказка ${story.title} не удалилaсь');
-    }
+    await _storyRepository.deleteById(
+      story.id,
+    );
+    await FileService.delete(story.image);
   }
 
   Future<void> deleteStories() async {
     //удаление картинок не происходит
-    try {
-      await _storyRepository.deleteMany();
-    } catch (e) {
-      throw NotFoundException('Сказки не удалились');
-    }
+    await _storyRepository.deleteAll();
   }
-
- 
 }

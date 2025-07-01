@@ -29,10 +29,10 @@ final _storeService = StoryService(_storyRepository);
 final _storyCategoriesRepository = StoryCategoriesRepository(_databaseService);
 final _storeCategoriesService = StoryCategoryService(_storyCategoriesRepository);
 
-final _storyPopularRepository = StoryPopularRepository(_databaseService);
+final _storyPopularRepository = StoryPopularRepository(_databaseService, _storyRepository);
 final _storyPopularService = StoryPopularService(_storyPopularRepository);
 
-final _searchRepository = SearchRepository(_databaseService);
+final _searchRepository = SearchRepository(_databaseService, _storyRepository);
 final _searchService = SearchService(_searchRepository);
 
 Handler middleware(Handler handler) {

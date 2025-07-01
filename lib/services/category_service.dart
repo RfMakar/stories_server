@@ -1,27 +1,20 @@
 import 'package:dart_frog/dart_frog.dart';
-import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/core/utils/file_service.dart';
 import 'package:stories_server/models/category_model.dart';
 import 'package:stories_server/repositories/category_repository.dart';
 
-
-
 class CategoryService {
-  final CategoryRepository _categoryRepository;
+  final CategoryRepository _categoryRepository; 
   CategoryService(this._categoryRepository);
 
   Future<List<CategoryModel>> getCategories() async {
-    return await _categoryRepository.findMany();
+    return await _categoryRepository.getAll();
   }
 
-  Future<CategoryModel> getCategory({String? id, String? name}) async {
-    final _category = await _categoryRepository.findUnique(
+  Future<CategoryModel> getCategory({required String id}) async {
+    final _category = await _categoryRepository.getById(
       id: id,
-      name: name,
     );
-    if (_category == null) {
-      throw NotFoundException('Категория не найдена');
-    }
     return _category;
   }
 
@@ -29,12 +22,6 @@ class CategoryService {
     required String name,
     required UploadedFile icon,
   }) async {
-    //Проверка уникальности категории
-    final _categoryUnique = await _categoryRepository.findUnique(name: name);
-
-    if (_categoryUnique != null) {
-      throw ConflictException('Категория ${_categoryUnique.name} существует');
-    }
     //сохранение картинки и получение пути к ней
     final iconPathSave = await FileService.saveIcon(icon);
 
@@ -50,24 +37,10 @@ class CategoryService {
     String? name,
     UploadedFile? icon,
   }) async {
-    //Проверка уникальности категории
-    final _categoryUnique = await _categoryRepository.findUnique(id: id);
-
-    //Проверка по имени
-    if (name != null) {
-      final _categoryUniqueName = await _categoryRepository.findUnique(
-        name: name,
-      );
-      if (_categoryUniqueName != null) {
-        throw ConflictException(
-          'Категория ${_categoryUniqueName.name} существует',
-        );
-      }
-    }
-
     //Удаляет старую иконку с сервера
     if (icon != null) {
-      await FileService.delete(_categoryUnique?.icon);
+      final _categoryUnique = await _categoryRepository.getById(id: id);
+      await FileService.delete(_categoryUnique.icon);
     }
     final iconPathSave = icon == null ? null : await FileService.saveIcon(icon);
 
@@ -76,29 +49,18 @@ class CategoryService {
       name: name,
       icon: iconPathSave,
     );
-
     return _category;
   }
 
   Future<void> deleteCategory({required CategoryModel category}) async {
-    try {
-      await _categoryRepository.delete(
-        id: category.id,
-      );
-      await FileService.delete(category.icon);
-    } catch (e) {
-      throw NotFoundException('Категории ${category.name} не удалилaсь');
-    }
+    await _categoryRepository.deleteById(
+      id: category.id,
+    );
+    await FileService.delete(category.icon);
   }
 
   Future<void> deleteCategories() async {
     //удаление иконок не происходит
-    try {
-      await _categoryRepository.deleteMany();
-    } catch (e) {
-      throw NotFoundException('Категории не удалились');
-    }
+    await _categoryRepository.deleteAll();
   }
-
-  
 }

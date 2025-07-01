@@ -7,16 +7,10 @@ class SearchService {
   SearchService(this._searchRepository);
 
   Future<List<CategoryModel>> searchCategories(String query) async {
-    if (query.trim().isEmpty) {
-      return [];
-    }
     return await _searchRepository.searchCategories(query);
   }
 
-   Future<List<StoryModel>> searchStories(String query) async {
-    if (query.trim().isEmpty) {
-      return [];
-    }
+  Future<List<StoryModel>> searchStories(String query) async {
     return await _searchRepository.searchStories(query);
   }
 }

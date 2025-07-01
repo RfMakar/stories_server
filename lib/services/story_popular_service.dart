@@ -1,4 +1,3 @@
-import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/models/story_model.dart';
 
 import '../repositories/story_popular_repository.dart';
@@ -17,9 +16,6 @@ class StoryPopularService {
       startOfDay: startOfDay,
       endOfDay: endOfDay,
     );
-    if (_story == null) {
-      throw NotFoundException('Нет популярной сказки за день');
-    }
     return _story;
   }
 

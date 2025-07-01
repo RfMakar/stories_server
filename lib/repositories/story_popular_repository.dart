@@ -1,61 +1,44 @@
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/data/database_sevice.dart';
-import 'package:stories_server/models/category_model.dart';
 import 'package:stories_server/models/story_model.dart';
+import 'package:stories_server/repositories/story_repository.dart';
 
 class StoryPopularRepository {
   final DatabaseService _databaseService;
+  final StoryRepository _storyRepository;
 
-  StoryPopularRepository(this._databaseService);
+  StoryPopularRepository(this._databaseService, this._storyRepository);
 
-  Future<StoryModel?> topToDay({
+  Future<StoryModel> topToDay({
     required DateTime startOfDay,
     required DateTime endOfDay,
   }) async {
-    final db = _databaseService.db;
-
-    // Получаем id истории с максимальным числом прочтений за указанный период
-    final result = await db.rawQuery('''
+    try {
+      // Получаем id истории с максимальным числом прочтений за указанный период
+      final result = await _databaseService.db.rawQuery(
+        '''
     SELECT s.*, COUNT(sr.id) AS read_count_in_period
     FROM stories s
-    LEFT JOIN story_reads sr ON s.id = sr.story_id
-      AND sr.read_at > ? AND sr.read_at < ?
+    LEFT JOIN story_reads sr ON s.id = sr.story_id AND sr.read_at > ? AND sr.read_at < ?
     GROUP BY s.id
     ORDER BY read_count_in_period DESC
     LIMIT 1
-  ''', [startOfDay.toIso8601String(), endOfDay.toIso8601String()]);
+  ''',
+        [startOfDay.toIso8601String(), endOfDay.toIso8601String()],
+      );
 
-    if (result.isEmpty) {
-      return null;
+      if (result.isEmpty) {
+        throw NotFoundException('Сказка не найдена');
+      }
+
+      final storyId = result.first['id'] as String;
+
+      return await _storyRepository.getById(id: storyId);
+    } on DatabaseException catch (e) {
+      throw DBaseException(
+          'Ошибка при получение популярных сказок: ${e.toString()}');
     }
-
-    final row = result.first;
-
-    // Получаем категории для этой истории
-    final categoriesResult = await db.rawQuery('''
-    SELECT c.id, c.name, c.icon
-    FROM categories c
-    INNER JOIN story_categories sc ON c.id = sc.category_id
-    WHERE sc.story_id = ?
-  ''', [row['id']]);
-
-    final categories = categoriesResult
-        .map((catRow) => CategoryModel(
-              id: catRow['id'] as String,
-              name: catRow['name'] as String,
-              icon: catRow['icon'] as String,
-            ))
-        .toList();
-
-    return StoryModel(
-      id: row['id'] as String,
-      title: row['title'] as String,
-      description: row['description'] as String,
-      content: row['content'] as String,
-      image: row['image'] as String,
-      createdAt: DateTime.parse(row['created_at'] as String),
-      readCount: row['read_count'] as int,
-      categories: categories,
-    );
   }
 
   Future<List<StoryModel>> topPeriod({
@@ -63,10 +46,10 @@ class StoryPopularRepository {
     required DateTime end,
     required int take,
   }) async {
-    final db = _databaseService.db;
-
-    // Получаем top сказок с подсчётом прочтений за период и сортировкой по убыванию
-    final result = await db.rawQuery('''
+    try {
+      // Получаем top сказок с подсчётом прочтений за период и сортировкой по убыванию
+      final result = await _databaseService.db.rawQuery(
+        '''
     SELECT s.*, COUNT(sr.id) AS read_count_in_period
     FROM stories s
     LEFT JOIN story_reads sr ON s.id = sr.story_id
@@ -74,86 +57,49 @@ class StoryPopularRepository {
     GROUP BY s.id
     ORDER BY read_count_in_period DESC
     LIMIT ?
-  ''', [start.toIso8601String(), end.toIso8601String(), take]);
-
-    // Для каждой сказки получаем категории
-    List<StoryModel> stories = [];
-    for (final row in result) {
-      final categoriesResult = await db.rawQuery('''
-      SELECT c.id, c.name, c.icon
-      FROM categories c
-      INNER JOIN story_categories sc ON c.id = sc.category_id
-      WHERE sc.story_id = ?
-    ''', [row['id']]);
-
-      final categories = categoriesResult
-          .map((catRow) => CategoryModel(
-                id: catRow['id'] as String,
-                name: catRow['name'] as String,
-                icon: catRow['icon'] as String,
-              ))
-          .toList();
-
-      stories.add(
-        StoryModel(
-          id: row['id'] as String,
-          title: row['title'] as String,
-          description: row['description'] as String,
-          content: row['content'] as String,
-          image: row['image'] as String,
-          createdAt: DateTime.parse(row['created_at'] as String),
-          readCount: row['read_count'] as int,
-          categories: categories,
-        ),
+  ''',
+        [start.toIso8601String(), end.toIso8601String(), take],
       );
-    }
 
-    return stories;
+      // Для каждой сказки получаем категории
+      List<StoryModel> stories = [];
+
+      for (final row in result) {
+        final storyId = row['id'] as String;
+        final story = await _storyRepository.getById(id: storyId);
+
+        stories.add(story);
+      }
+
+      return stories;
+    } on DatabaseException catch (e) {
+      throw DBaseException(
+          'Ошибка при получение популярных сказок: ${e.toString()}');
+    }
   }
 
   Future<List<StoryModel>> newItems() async {
-    final db = _databaseService.db;
+    try {
+      // Получаем 7 последних сказок по created_at
+      final result = await _databaseService.db.query(
+        'stories',
+        orderBy: 'created_at DESC',
+        limit: 7,
+      );
 
-    // Получаем 7 последних сказок по created_at
-    final storiesResult = await db.query(
-      'stories',
-      orderBy: 'created_at DESC',
-      limit: 7,
-    );
+      List<StoryModel> stories = [];
 
-    List<StoryModel> stories = [];
+      for (final row in result) {
+        final storyId = row['id'] as String;
+        final story = await _storyRepository.getById(id: storyId);
 
-    for (final row in storiesResult) {
-      // Получаем категории для каждой сказки
-      final categoriesResult = await db.rawQuery('''
-      SELECT c.id, c.name, c.icon
-      FROM categories c
-      INNER JOIN story_categories sc ON c.id = sc.category_id
-      WHERE sc.story_id = ?
-    ''', [row['id']]);
+        stories.add(story);
+      }
 
-      final categories = categoriesResult
-          .map(
-            (catRow) => CategoryModel(
-              id: catRow['id'] as String,
-              name: catRow['name'] as String,
-              icon: catRow['icon'] as String,
-            ),
-          )
-          .toList();
-
-      stories.add(StoryModel(
-        id: row['id'] as String,
-        title: row['title'] as String,
-        description: row['description'] as String,
-        content: row['content'] as String,
-        image: row['image'] as String,
-        createdAt: DateTime.parse(row['created_at'] as String),
-        readCount: row['read_count'] as int,
-        categories: categories,
-      ));
+      return stories;
+    } on DatabaseException catch (e) {
+      throw DBaseException(
+          'Ошибка при получение популярных сказок: ${e.toString()}');
     }
-
-    return stories;
   }
 }

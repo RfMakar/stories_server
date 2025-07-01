@@ -46,7 +46,7 @@ Future<Response> _put(RequestContext context, String id) async {
     image: image,
   );
   return Response.json(
-    statusCode: HttpStatus.created,
+    statusCode: HttpStatus.ok,
     body: _story,
   );
 }
