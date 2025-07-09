@@ -11,7 +11,7 @@ class StoryPopularRepository {
 
   StoryPopularRepository(this._databaseService, this._storyRepository);
 
-  Future<void> createStoryReads({required String storyId}) async {
+  Future<void> updateStoryReads({required String storyId}) async {
     final uuid = Uuid();
     try {
       // Увеличиваем read_count у сказки

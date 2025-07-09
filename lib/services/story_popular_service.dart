@@ -7,8 +7,8 @@ class StoryPopularService {
 
   StoryPopularService(this._storyPopularRepository);
 
-  Future<void> createStoryReads({required String storyId})async{
-    await _storyPopularRepository.createStoryReads(storyId: storyId);
+  Future<void> updateStoryReads({required String storyId})async{
+    await _storyPopularRepository.updateStoryReads(storyId: storyId);
   }
 
   Future<StoryModel> getStoryTopToDay() async {

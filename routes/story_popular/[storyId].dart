@@ -21,7 +21,7 @@ Future<Response> onRequest(RequestContext context, String storyId) async {
 Future<Response> _put(RequestContext context, String storyId) async {
   final _storyPopularService = context.read<StoryPopularService>();
 
-  await _storyPopularService.createStoryReads(storyId: storyId);
+  await _storyPopularService.updateStoryReads(storyId: storyId);
 
   return Response.json(statusCode: HttpStatus.ok);
 }
