@@ -9,6 +9,7 @@ class StoryRepository {
   final DatabaseService _databaseService;
 
   StoryRepository(this._databaseService);
+
   //Все сказки с категориями
   Future<List<StoryModel>> getAllStories() async {
     try {
@@ -30,27 +31,27 @@ class StoryRepository {
 
   //Сказки с конкретной категорией
   Future<List<StoryModel>> getStoriesWithCategories({
-  required String categoryId,
-}) async {
-  try {
-    // Шаг 1: Получаем ID всех сказок, у которых есть нужная категория
-    final storyIdsResult = await _databaseService.db.rawQuery('''
+    required String categoryId,
+  }) async {
+    try {
+      // Шаг 1: Получаем ID всех сказок, у которых есть нужная категория
+      final storyIdsResult = await _databaseService.db.rawQuery('''
       SELECT story_id
       FROM story_categories
       WHERE category_id = ?
     ''', [categoryId]);
 
-    if (storyIdsResult.isEmpty) return [];
+      if (storyIdsResult.isEmpty) return [];
 
-    final storyIds = storyIdsResult.map((e) => e['story_id'] as String).toList();
+      final storyIds =
+          storyIdsResult.map((e) => e['story_id'] as String).toList();
 
-    // Формируем плейсхолдеры (?, ?, ?, ...)
-    final placeholders = List.filled(storyIds.length, '?').join(', ');
+      // Формируем плейсхолдеры (?, ?, ?, ...)
+      final placeholders = List.filled(storyIds.length, '?').join(', ');
 
-    // Шаг 2: Получаем сами сказки и ВСЕ их категории
-    final result = await _databaseService.db.rawQuery('''
-      SELECT s.id, s.title, s.description, s.content, s.image, s.created_at, s.read_count,
-             c.id AS category_id, c.name AS category_name, c.icon AS category_icon
+      // Шаг 2: Получаем сами сказки и ВСЕ их категории
+      final result = await _databaseService.db.rawQuery('''
+      SELECT s.id, s.title, s.description, s.content, s.image, s.created_at, s.read_count, c.id AS category_id, c.name AS category_name, c.icon AS category_icon
       FROM stories s
       LEFT JOIN story_categories sc ON s.id = sc.story_id
       LEFT JOIN categories c ON c.id = sc.category_id
@@ -58,14 +59,13 @@ class StoryRepository {
       ORDER BY s.created_at DESC
     ''', storyIds);
 
-    return _mapStoryRows(result);
-  } on DatabaseException catch (e) {
-    throw DBaseException(
-      'Ошибка при получении сказок по категории: ${e.toString()}',
-    );
+      return _mapStoryRows(result);
+    } on DatabaseException catch (e) {
+      throw DBaseException(
+        'Ошибка при получении сказок по категории: ${e.toString()}',
+      );
+    }
   }
-}
-
 
   //Сказки со всеми категориями
   List<StoryModel> _mapStoryRows(List<Map<String, Object?>> result) {
@@ -101,24 +101,17 @@ class StoryRepository {
     return storiesMap.values.toList();
   }
 
-  Future<StoryModel> getById({
-    required String id,
-    bool isRecord = false,
-  }) async {
-    //Записи чтения
-    if (isRecord) {
-      await _readRecord(id: id);
-    }
-
+  Future<StoryModel> getById({required String id}) async {
     try {
       final rows = await _databaseService.db.rawQuery(
         '''
-    SELECT s.*, c.id AS category_id, c.name AS category_name, c.icon AS category_icon
-    FROM stories s
-    LEFT JOIN story_categories sc ON s.id = sc.story_id
-    LEFT JOIN categories c ON c.id = sc.category_id
-    WHERE s.id = ?
-    ''',
+      SELECT s.id, s.title, s.description, s.content, s.image, s.created_at, s.read_count,
+             c.id AS category_id, c.name AS category_name, c.icon AS category_icon
+      FROM stories s
+      LEFT JOIN story_categories sc ON s.id = sc.story_id
+      LEFT JOIN categories c ON c.id = sc.category_id
+      WHERE s.id = ?
+      ''',
         [id],
       );
 
@@ -126,28 +119,8 @@ class StoryRepository {
         throw NotFoundException('Сказка с id $id не найдена');
       }
 
-      final first = rows.first;
-
-      // Собираем категории, фильтруя по наличию category_id
-      final categories = rows
-          .where((row) => row['category_id'] != null)
-          .map((row) => CategoryModel(
-                id: row['category_id'] as String,
-                name: row['category_name'] as String,
-                icon: row['category_icon'] as String,
-              ))
-          .toList();
-
-      return StoryModel(
-        id: first['id'] as String,
-        title: first['title'] as String,
-        description: first['description'] as String,
-        content: first['content'] as String,
-        image: first['image'] as String,
-        createdAt: DateTime.parse(first['created_at'] as String),
-        readCount: first['read_count'] as int,
-        categories: categories,
-      );
+      final stories = _mapStoryRows(rows);
+      return stories.first; // т.к. это выборка по ID — всегда одна сказка
     } on DatabaseException catch (e) {
       throw DBaseException(
         'Ошибка при получении сказки из базы данных: ${e.toString()}',
@@ -258,28 +231,20 @@ class StoryRepository {
     }
   }
 
-  Future<void> _readRecord({required String id}) async {
-    final uuid = Uuid();
+  Future<void> updateReadCount({required String id}) async {
     try {
       // Увеличиваем read_count у сказки
       await _databaseService.db.rawUpdate(
         '''
-    UPDATE stories
-    SET read_count = read_count + 1
-    WHERE id = ?
-    ''',
+        UPDATE stories
+        SET read_count = read_count + 1
+        WHERE id = ?
+        ''',
         [id],
       );
-
-      // Создаём запись о прочтении сказки
-      await _databaseService.db.insert('story_reads', {
-        'id': uuid.v4(),
-        'story_id': id,
-        'read_at': DateTime.now().toIso8601String(),
-      });
     } on DatabaseException catch (e) {
       throw DBaseException(
-        'Ошибка при создание записи о прочтение сказки: ${e.toString()}',
+        'Ошибка при увеличение счеткика о прочтение сказки: ${e.toString()}',
       );
     }
   }

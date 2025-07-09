@@ -19,14 +19,8 @@ class StoryService {
     );
   }
 
-  Future<StoryModel> getStory({
-    required String id,
-    required bool isRecord,
-  }) async {
-    final _story = await _storyRepository.getById(
-      id: id,
-      isRecord: isRecord,
-    );
+  Future<StoryModel> getStory({required String id}) async {
+    final _story = await _storyRepository.getById(id: id);
     return _story;
   }
 
@@ -57,10 +51,7 @@ class StoryService {
   }) async {
     //Удаляет старую картинку с сервера
     if (image != null) {
-      final _story = await _storyRepository.getById(
-        id: id,
-        isRecord: false,
-      );
+      final _story = await _storyRepository.getById(id: id);
       await FileService.delete(_story.image);
     }
     final imagePathSave =

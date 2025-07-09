@@ -5,7 +5,6 @@ import 'package:stories_server/services/category_service.dart';
 import 'package:stories_server/services/story_category_service.dart';
 import 'package:stories_server/services/story_service.dart';
 
-
 Future<Response> onRequest(
   RequestContext context,
   String storyId,
@@ -13,7 +12,7 @@ Future<Response> onRequest(
 ) async {
   //Проверка наличии сказки
   final _storyService = context.read<StoryService>();
-  await _storyService.getStory(id: storyId, isRecord: false);
+  await _storyService.getStory(id: storyId);
 
   //Проверка наличие категории
   final _categoryService = await context.read<CategoryService>();

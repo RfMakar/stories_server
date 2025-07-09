@@ -7,6 +7,10 @@ class StoryPopularService {
 
   StoryPopularService(this._storyPopularRepository);
 
+  Future<void> createStoryReads({required String storyId})async{
+    await _storyPopularRepository.createStoryReads(storyId: storyId);
+  }
+
   Future<StoryModel> getStoryTopToDay() async {
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);

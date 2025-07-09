@@ -3,12 +3,32 @@ import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/data/database_sevice.dart';
 import 'package:stories_server/models/story_model.dart';
 import 'package:stories_server/repositories/story_repository.dart';
+import 'package:uuid/uuid.dart';
 
 class StoryPopularRepository {
   final DatabaseService _databaseService;
   final StoryRepository _storyRepository;
 
   StoryPopularRepository(this._databaseService, this._storyRepository);
+
+  Future<void> createStoryReads({required String storyId}) async {
+    final uuid = Uuid();
+    try {
+      // Увеличиваем read_count у сказки
+      await _storyRepository.updateReadCount(id: storyId);
+
+      // Создаём запись о прочтении сказки
+      await _databaseService.db.insert('story_reads', {
+        'id': uuid.v4(),
+        'story_id': storyId,
+        'read_at': DateTime.now().toIso8601String(),
+      });
+    } on DatabaseException catch (e) {
+      throw DBaseException(
+        'Ошибка при создание записи о прочтение сказки: ${e.toString()}',
+      );
+    }
+  }
 
   Future<StoryModel> topToDay({
     required DateTime startOfDay,
