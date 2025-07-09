@@ -8,8 +8,13 @@ class StoryService {
 
   StoryService(this._storyRepository);
 
-  Future<List<StoryModel>> getStories({String? categoryId}) async {
-    return await _storyRepository.getAllByCategoryId(
+  Future<List<StoryModel>> getAllStories() async {
+    return await _storyRepository.getAllStories();
+  }
+
+  Future<List<StoryModel>> getStoriesWithCategories(
+      {required String categoryId}) async {
+    return await _storyRepository.getStoriesWithCategories(
       categoryId: categoryId,
     );
   }

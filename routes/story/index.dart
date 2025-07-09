@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
+import 'package:stories_server/models/story_model.dart';
 import 'package:stories_server/services/story_service.dart';
-
 
 Future<Response> onRequest(RequestContext context) async {
   switch (context.request.method) {
@@ -26,10 +26,14 @@ Future<Response> _get(RequestContext context) async {
 
   final query = context.request.uri.queryParameters;
   final categoryId = query['categoryId'];
+  final List<StoryModel> _stories;
 
-  final _stories = await _storyService.getStories(
-    categoryId: categoryId,
-  );
+  if (categoryId != null) {
+    _stories =
+        await _storyService.getStoriesWithCategories(categoryId: categoryId);
+  } else {
+    _stories = await _storyService.getAllStories();
+  }
   return Response.json(body: _stories.map((e) => e).toList());
 }
 
@@ -50,7 +54,8 @@ Future<Response> _post(RequestContext context) async {
       content == null ||
       content.trim().isEmpty ||
       image == null) {
-    throw ValidationException("Обязательные поля: 'title', 'description', 'content', 'image'");
+    throw ValidationException(
+        "Обязательные поля: 'title', 'description', 'content', 'image'");
   }
   final _story = await _storyService.createStory(
     title: title,

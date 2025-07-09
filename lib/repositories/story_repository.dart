@@ -9,59 +9,79 @@ class StoryRepository {
   final DatabaseService _databaseService;
 
   StoryRepository(this._databaseService);
-
-  Future<List<StoryModel>> getAllByCategoryId({String? categoryId}) async {
+  //Все сказки с категориями
+  Future<List<StoryModel>> getAllStories() async {
     try {
-      final result = await _databaseService.db.rawQuery(
-        '''
+      final result = await _databaseService.db.rawQuery('''
     SELECT s.id, s.title, s.description, s.content, s.image, s.created_at, s.read_count, c.id AS category_id, c.name AS category_name, c.icon AS category_icon
     FROM stories s
     LEFT JOIN story_categories sc ON s.id = sc.story_id
     LEFT JOIN categories c ON c.id = sc.category_id
-    ${categoryId != null ? 'WHERE c.id = ?' : ''}
     ORDER BY s.created_at DESC
-    ''',
-        categoryId != null ? [categoryId] : [],
-      );
+  ''');
 
-      // Карта для хранения историй с ключом = id истории
-      final Map<String, StoryModel> storiesMap = {};
-
-      for (final row in result) {
-        final storyId = row['id'] as String;
-
-        // Если история ещё не добавлена в карту — создаём новый объект StoryModel
-        if (!storiesMap.containsKey(storyId)) {
-          storiesMap[storyId] = StoryModel(
-            id: storyId,
-            title: row['title'] as String,
-            description: row['description'] as String,
-            content: row['content'] as String,
-            image: row['image'] as String,
-            createdAt: DateTime.parse(row['created_at'] as String),
-            readCount: row['read_count'] as int,
-            categories: [], // Пустой список категорий пока
-          );
-        }
-
-        // Если у этой строки есть категория, добавляем её в список категорий истории
-        final categoryId = row['category_id'];
-        if (categoryId != null) {
-          storiesMap[storyId]!.categories.add(
-                CategoryModel(
-                  id: categoryId as String,
-                  name: row['category_name'] as String,
-                  icon: row['category_icon'] as String,
-                ),
-              );
-        }
-      }
-      return storiesMap.values.toList();
+      return _mapStoryRows(result);
     } on DatabaseException catch (e) {
       throw DBaseException(
         'Ошибка при получении сказок из базы данных: ${e.toString()}',
       );
     }
+  }
+  //Сказки с конкретной категорией
+  Future<List<StoryModel>> getStoriesWithCategories({
+    required String categoryId,
+  }) async {
+    try {
+       final result = await _databaseService.db.rawQuery('''
+    SELECT s.id, s.title, s.description, s.content, s.image, s.created_at, s.read_count, c.id AS category_id, c.name AS category_name, c.icon AS category_icon
+    FROM stories s
+    INNER JOIN story_categories sc ON s.id = sc.story_id
+    INNER JOIN categories c ON c.id = sc.category_id
+    WHERE c.id = ?
+    ORDER BY s.created_at DESC
+  ''', [categoryId]);
+
+    return _mapStoryRows(result);
+    } on DatabaseException catch (e) {
+      throw DBaseException(
+        'Ошибка при получении сказок из базы данных: ${e.toString()}',
+      );
+    }
+   
+  }
+
+  //Сказки со всеми категориями
+  List<StoryModel> _mapStoryRows(List<Map<String, Object?>> result) {
+    final Map<String, StoryModel> storiesMap = {};
+
+    for (final row in result) {
+      final storyId = row['id'] as String;
+
+      storiesMap.putIfAbsent(storyId, () {
+        return StoryModel(
+          id: storyId,
+          title: row['title'] as String,
+          description: row['description'] as String,
+          content: row['content'] as String,
+          image: row['image'] as String,
+          createdAt: DateTime.parse(row['created_at'] as String),
+          readCount: row['read_count'] as int,
+          categories: [],
+        );
+      });
+
+      if (row['category_id'] != null) {
+        storiesMap[storyId]!.categories.add(
+              CategoryModel(
+                id: row['category_id'] as String,
+                name: row['category_name'] as String,
+                icon: row['category_icon'] as String,
+              ),
+            );
+      }
+    }
+
+    return storiesMap.values.toList();
   }
 
   Future<StoryModel> getById({
