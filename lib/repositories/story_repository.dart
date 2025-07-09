@@ -27,28 +27,45 @@ class StoryRepository {
       );
     }
   }
+
   //Сказки с конкретной категорией
   Future<List<StoryModel>> getStoriesWithCategories({
-    required String categoryId,
-  }) async {
-    try {
-       final result = await _databaseService.db.rawQuery('''
-    SELECT s.id, s.title, s.description, s.content, s.image, s.created_at, s.read_count, c.id AS category_id, c.name AS category_name, c.icon AS category_icon
-    FROM stories s
-    INNER JOIN story_categories sc ON s.id = sc.story_id
-    INNER JOIN categories c ON c.id = sc.category_id
-    WHERE c.id = ?
-    ORDER BY s.created_at DESC
-  ''', [categoryId]);
+  required String categoryId,
+}) async {
+  try {
+    // Шаг 1: Получаем ID всех сказок, у которых есть нужная категория
+    final storyIdsResult = await _databaseService.db.rawQuery('''
+      SELECT story_id
+      FROM story_categories
+      WHERE category_id = ?
+    ''', [categoryId]);
+
+    if (storyIdsResult.isEmpty) return [];
+
+    final storyIds = storyIdsResult.map((e) => e['story_id'] as String).toList();
+
+    // Формируем плейсхолдеры (?, ?, ?, ...)
+    final placeholders = List.filled(storyIds.length, '?').join(', ');
+
+    // Шаг 2: Получаем сами сказки и ВСЕ их категории
+    final result = await _databaseService.db.rawQuery('''
+      SELECT s.id, s.title, s.description, s.content, s.image, s.created_at, s.read_count,
+             c.id AS category_id, c.name AS category_name, c.icon AS category_icon
+      FROM stories s
+      LEFT JOIN story_categories sc ON s.id = sc.story_id
+      LEFT JOIN categories c ON c.id = sc.category_id
+      WHERE s.id IN ($placeholders)
+      ORDER BY s.created_at DESC
+    ''', storyIds);
 
     return _mapStoryRows(result);
-    } on DatabaseException catch (e) {
-      throw DBaseException(
-        'Ошибка при получении сказок из базы данных: ${e.toString()}',
-      );
-    }
-   
+  } on DatabaseException catch (e) {
+    throw DBaseException(
+      'Ошибка при получении сказок по категории: ${e.toString()}',
+    );
   }
+}
+
 
   //Сказки со всеми категориями
   List<StoryModel> _mapStoryRows(List<Map<String, Object?>> result) {
