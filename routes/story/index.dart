@@ -46,6 +46,7 @@ Future<Response> _post(RequestContext context) async {
   final description = formData.fields['description'];
   final content = formData.fields['content'];
   final image = formData.files['image'];
+  final audio = formData.files['audio'];
 
   if (title == null ||
       title.trim().isEmpty ||
@@ -55,13 +56,15 @@ Future<Response> _post(RequestContext context) async {
       content.trim().isEmpty ||
       image == null) {
     throw ValidationException(
-        "Обязательные поля: 'title', 'description', 'content', 'image'");
+      "Обязательные поля: 'title', 'description', 'content', 'image'",
+    );
   }
   final _story = await _storyService.createStory(
     title: title,
     description: description,
     content: content,
     image: image,
+    audio: audio,
   );
 
   return Response.json(

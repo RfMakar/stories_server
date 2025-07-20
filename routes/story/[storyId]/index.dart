@@ -5,7 +5,6 @@ import 'package:dart_frog/dart_frog.dart';
 import 'package:stories_server/models/story_model.dart';
 import 'package:stories_server/services/story_service.dart';
 
-
 FutureOr<Response> onRequest(RequestContext context, String storyId) async {
   final _storyService = context.read<StoryService>();
   final _story = await _storyService.getStory(id: storyId);
@@ -37,6 +36,7 @@ Future<Response> _put(RequestContext context, String id) async {
   final description = formData.fields['description'];
   final content = formData.fields['content'];
   final image = formData.files['image'];
+  final audio = formData.files['audio'];
 
   final _story = await _storyService.updateStory(
     id: id,
@@ -44,6 +44,7 @@ Future<Response> _put(RequestContext context, String id) async {
     description: description,
     content: content,
     image: image,
+    audio: audio,
   );
   return Response.json(
     statusCode: HttpStatus.ok,

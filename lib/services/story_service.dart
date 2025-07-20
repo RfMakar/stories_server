@@ -29,15 +29,23 @@ class StoryService {
     required String description,
     required String content,
     required UploadedFile image,
+    UploadedFile? audio,
   }) async {
     //сохранение картинки и получение пути к ней
     final imagePathSave = await FileService.saveImage(image);
+
+    //Сохранение аудио
+    String? audioPathSave;
+    if (audio != null) {
+      audioPathSave = await FileService.saveAudio(audio);
+    }
 
     final _story = await _storyRepository.create(
       title: title,
       description: description,
       content: content,
       image: imagePathSave,
+      audio: audioPathSave,
     );
     return _story;
   }
@@ -48,21 +56,35 @@ class StoryService {
     String? description,
     String? content,
     UploadedFile? image,
+    UploadedFile? audio,
   }) async {
     //Удаляет старую картинку с сервера
     if (image != null) {
       final _story = await _storyRepository.getById(id: id);
       await FileService.delete(_story.image);
     }
+    //Удаляет старую аудио
+    if (audio != null) {
+      final _story = await _storyRepository.getById(id: id);
+      //Проверка наличия audio
+      if (_story.audio != null) {
+        await FileService.delete(_story.audio);
+      }
+    }
+    //Создание новой картинки если пришло обновление
     final imagePathSave =
         image == null ? null : await FileService.saveImage(image);
-
+    //Создание новой аудио если пришло обновление
+    final audioPathSave =
+        audio == null ? null : await FileService.saveAudio(audio);
+    //Обновление сказки
     final _story = await _storyRepository.update(
       id: id,
       title: title,
       description: description,
       content: content,
       image: imagePathSave,
+      audio: audioPathSave,
     );
 
     return _story;
@@ -72,7 +94,12 @@ class StoryService {
     await _storyRepository.deleteById(
       story.id,
     );
+    //Удаление картинки
     await FileService.delete(story.image);
+    //Удаление аудио
+    if (story.audio != null) {
+      await FileService.delete(story.audio);
+    }
   }
 
   Future<void> deleteStories() async {

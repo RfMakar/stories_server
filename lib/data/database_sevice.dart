@@ -34,6 +34,7 @@ class DatabaseService {
       description TEXT NOT NULL,
       content TEXT NOT NULL,
       image TEXT NOT NULL,
+      audio TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       read_count INTEGER NOT NULL DEFAULT 0
       );
@@ -69,23 +70,11 @@ class DatabaseService {
       await _db.execute('PRAGMA user_version = 1');
     }
 
-    // if (currentVersion == 1) {
-    //   // Миграция для добавления поля title_lower в существующую таблицу
-    //   await _db.execute(
-    //     'ALTER TABLE stories ADD COLUMN title_lower TEXT NOT NULL DEFAULT ""',
-    //   );
-    //   await _db.execute(
-    //     'ALTER TABLE categories ADD COLUMN name_lower TEXT NOT NULL DEFAULT ""',
-    //   );
-    //   // Заполняем title_lower для существующих записей
-    //   await _db.execute('''
-    //   UPDATE stories SET title_lower = title;
-    //   ''');
-    //   await _db.execute('''
-    //   UPDATE categories SET name_lower = name;
-    //   ''');
-    //   await _db.execute('PRAGMA migration_version = 2');
-    // }
+    if (currentVersion == 1) {
+      // Добавляем колонку audio
+      await _db.execute('ALTER TABLE stories ADD COLUMN audio TEXT;');
+      await _db.execute('PRAGMA user_version = 2');
+    }
   }
 
   Database get db => _db;

@@ -14,7 +14,7 @@ class StoryRepository {
   Future<List<StoryModel>> getAllStories() async {
     try {
       final result = await _databaseService.db.rawQuery('''
-    SELECT s.id, s.title, s.description, s.content, s.image, s.created_at, s.read_count, c.id AS category_id, c.name AS category_name, c.icon AS category_icon
+    SELECT s.id, s.title, s.description, s.content, s.image, s.audio, s.created_at, s.read_count, c.id AS category_id, c.name AS category_name, c.icon AS category_icon
     FROM stories s
     LEFT JOIN story_categories sc ON s.id = sc.story_id
     LEFT JOIN categories c ON c.id = sc.category_id
@@ -51,7 +51,7 @@ class StoryRepository {
 
       // Шаг 2: Получаем сами сказки и ВСЕ их категории
       final result = await _databaseService.db.rawQuery('''
-      SELECT s.id, s.title, s.description, s.content, s.image, s.created_at, s.read_count, c.id AS category_id, c.name AS category_name, c.icon AS category_icon
+      SELECT s.id, s.title, s.description, s.content, s.image, s.audio, s.created_at, s.read_count, c.id AS category_id, c.name AS category_name, c.icon AS category_icon
       FROM stories s
       LEFT JOIN story_categories sc ON s.id = sc.story_id
       LEFT JOIN categories c ON c.id = sc.category_id
@@ -81,6 +81,7 @@ class StoryRepository {
           description: row['description'] as String,
           content: row['content'] as String,
           image: row['image'] as String,
+          audio: row['audio'] as String?,
           createdAt: DateTime.parse(row['created_at'] as String),
           readCount: row['read_count'] as int,
           categories: [],
@@ -105,8 +106,7 @@ class StoryRepository {
     try {
       final rows = await _databaseService.db.rawQuery(
         '''
-      SELECT s.id, s.title, s.description, s.content, s.image, s.created_at, s.read_count,
-             c.id AS category_id, c.name AS category_name, c.icon AS category_icon
+      SELECT s.id, s.title, s.description, s.content, s.image, s.audio, s.created_at, s.read_count, c.id AS category_id, c.name AS category_name, c.icon AS category_icon
       FROM stories s
       LEFT JOIN story_categories sc ON s.id = sc.story_id
       LEFT JOIN categories c ON c.id = sc.category_id
@@ -133,6 +133,7 @@ class StoryRepository {
     required String description,
     required String content,
     required String image,
+    String? audio,
   }) async {
     final uuid = Uuid();
     final id = uuid.v4();
@@ -146,6 +147,7 @@ class StoryRepository {
         'description': description,
         'content': content,
         'image': image,
+        'audio': audio,
         'created_at': createdAt.toIso8601String(),
         'read_count': 0,
       });
@@ -156,6 +158,7 @@ class StoryRepository {
         description: description,
         content: content,
         image: image,
+        audio: audio,
         createdAt: createdAt,
         readCount: 0,
         categories: [],
@@ -173,6 +176,7 @@ class StoryRepository {
     String? description,
     String? content,
     String? image,
+    String? audio,
   }) async {
     final values = <String, Object?>{};
     if (title != null) {
@@ -182,6 +186,7 @@ class StoryRepository {
     if (description != null) values['description'] = description;
     if (content != null) values['content'] = content;
     if (image != null) values['image'] = image;
+    if (audio != null) values['audio'] = audio;
 
     try {
       final count = await _databaseService.db.update(

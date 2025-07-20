@@ -10,6 +10,7 @@ class StoryModel {
   final String description;
   final String content;
   final String image;
+  final String? audio;
   final DateTime createdAt;
   final int readCount;
   final List<CategoryModel> categories;
@@ -20,6 +21,7 @@ class StoryModel {
     required this.description,
     required this.content,
     required this.image,
+    required this.audio,
     required this.createdAt,
     required this.readCount,
     required this.categories,

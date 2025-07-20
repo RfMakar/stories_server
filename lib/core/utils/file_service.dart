@@ -17,12 +17,22 @@ class FileService {
 
   static Future<String> saveImage(UploadedFile image) async {
     final uniqueName = _uniqueFileName(image.name);
-    final pathIcon = 'uploads/images/$uniqueName';
-    final path = _pathUploaded + pathIcon;
+    final pathImage = 'uploads/images/$uniqueName';
+    final path = _pathUploaded + pathImage;
     final file = File(path);
     await file.parent.create(recursive: true);
     await file.writeAsBytes(await image.readAsBytes());
-    return pathIcon;
+    return pathImage;
+  }
+
+  static Future<String> saveAudio(UploadedFile audio) async {
+    final uniqueName = _uniqueFileName(audio.name);
+    final pathAudio = 'uploads/audio/$uniqueName';
+    final path = _pathUploaded + pathAudio;
+    final file = File(path);
+    await file.parent.create(recursive: true);
+    await file.writeAsBytes(await audio.readAsBytes());
+    return pathAudio;
   }
 
   static Future<void> delete(String? path) async {
