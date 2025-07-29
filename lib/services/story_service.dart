@@ -58,22 +58,25 @@ class StoryService {
     UploadedFile? image,
     UploadedFile? audio,
   }) async {
+    final _currentStory = await _storyRepository.getById(id: id);
+
     //Удаляет старую картинку с сервера
     if (image != null) {
-      final _story = await _storyRepository.getById(id: id);
-      await FileService.delete(_story.image);
+      await FileService.delete(_currentStory.image);
     }
-    //Удаляет старую аудио
-    if (audio != null) {
-      final _story = await _storyRepository.getById(id: id);
-      //Проверка наличия audio
-      if (_story.audio != null) {
-        await FileService.delete(_story.audio);
-      }
-    }
+
     //Создание новой картинки если пришло обновление
     final imagePathSave =
         image == null ? null : await FileService.saveImage(image);
+
+    //Удаляет старую аудио
+    if (audio != null) {
+      //Проверка наличия audio
+      if (_currentStory.audio != null) {
+        await FileService.delete(_currentStory.audio);
+      }
+    }
+
     //Создание новой аудио если пришло обновление
     final audioPathSave =
         audio == null ? null : await FileService.saveAudio(audio);
@@ -87,6 +90,17 @@ class StoryService {
       audio: audioPathSave,
     );
 
+    return _story;
+  }
+
+  Future<StoryModel?> deleteAudioStory({
+    required String id,
+  }) async {
+    final _currentStory = await _storyRepository.getById(id: id);
+    if (_currentStory.audio != null) {
+      await FileService.delete(_currentStory.audio!);
+    }
+    final _story = await _storyRepository.deleteAudio(id: id);
     return _story;
   }
 

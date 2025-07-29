@@ -209,6 +209,31 @@ class StoryRepository {
     }
   }
 
+  Future<StoryModel> deleteAudio({required String id}) async {
+    final values = <String, Object?>{};
+    values['audio'] = null;
+
+    try {
+      final count = await _databaseService.db.update(
+        'stories',
+        values,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+
+      if (count == 0) {
+        throw NotFoundException('Сказка с id $id не найдена');
+      }
+
+      // Возвращаем обновлённую запись с категориями
+      return await getById(id: id);
+    } on DatabaseException catch (e) {
+      throw DBaseException(
+        'Ошибка при удаление аудио у сказки: ${e.toString()}',
+      );
+    }
+  }
+
   Future<void> deleteById(String id) async {
     try {
       final count = await _databaseService.db.delete(
