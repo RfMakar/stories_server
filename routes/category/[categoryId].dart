@@ -6,7 +6,6 @@ import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/models/category_model.dart';
 import 'package:stories_server/services/category_service.dart';
 
-
 Future<Response> onRequest(RequestContext context, String categoryId) async {
   //Проверка существующей категории
   final _categoryService = await context.read<CategoryService>();
@@ -36,15 +35,22 @@ Future<Response> _put(RequestContext context, String categoryId) async {
 
   final formData = await context.request.formData();
   final name = formData.fields['name'];
+  final typeId = formData.fields['type_id'];
   final icon = formData.files['icon'];
 
-  if ((name == null || name.trim().isEmpty) && icon == null) {
-    throw ValidationException("Нужно указать хотя бы 'name' или 'icon' для обновления");
+  final isValidateData = (name == null || name.trim().isEmpty) &&
+      (typeId == null || typeId.trim().isEmpty) &&
+      icon == null;
+
+  if (isValidateData) {
+    throw ValidationException(
+        "Нужно указать хотя бы 'name','icon', 'typeId' для обновления");
   }
 
   final _category = await _categoryService.updateCategory(
     id: categoryId,
     name: name,
+    typeId: typeId,
     icon: icon,
   );
 

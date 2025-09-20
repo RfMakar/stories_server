@@ -2,6 +2,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/data/database_sevice.dart';
 import 'package:stories_server/models/category_model.dart';
+import 'package:stories_server/models/category_type_model.dart';
 import 'package:uuid/uuid.dart';
 
 class CategoryRepository {
@@ -11,38 +12,67 @@ class CategoryRepository {
 
   Future<List<CategoryModel>> getAll() async {
     try {
-      final result = await _databaseService.db.query('categories');
-      return result.map((row) => CategoryModel.fromJson(row)).toList();
+      final result = await _databaseService.db.rawQuery('''
+        SELECT c.id, c.name, c.icon, ct.id as type_id, ct.name as type_name
+        FROM categories c
+        LEFT JOIN category_types ct ON c.type_id = ct.id
+        ''');
+
+      return result.map((row) {
+        final typeId = row['type_id'] as String?;
+        final typeName = row['type_name'] as String?;
+        return CategoryModel(
+          id: row['id'] as String,
+          name: row['name'] as String,
+          icon: row['icon'] as String,
+          categoryType: (typeId != null && typeName != null)
+              ? CategoryTypeModel(id: typeId, name: typeName)
+              : null,
+        );
+      }).toList();
     } on DatabaseException catch (e) {
       throw DBaseException(
-        'Ошибка при получении категорий из базы данных: ${e.toString()}',
+        'Ошибка при получении категорий: ${e.toString()}',
       );
     }
   }
 
   Future<CategoryModel> getById({required String id}) async {
     try {
-      final result = await _databaseService.db.query(
-        'categories',
-        where: 'id = ?',
-        whereArgs: [id],
-        limit: 1,
-      );
+      final result = await _databaseService.db.rawQuery('''
+        SELECT c.id, c.name, c.icon, ct.id as type_id, ct.name as type_name
+        FROM categories c
+        LEFT JOIN category_types ct ON c.type_id = ct.id
+        WHERE c.id = ?
+        LIMIT 1
+      ''', [id]);
 
       if (result.isEmpty) {
         throw NotFoundException('Категория не найдена');
       }
 
-      return CategoryModel.fromJson(result.first);
+      final row = result.first;
+      final typeId = row['type_id'] as String?;
+      final typeName = row['type_name'] as String?;
+
+      return CategoryModel(
+        id: row['id'] as String,
+        name: row['name'] as String,
+        icon: row['icon'] as String,
+        categoryType: (typeId != null && typeName != null)
+            ? CategoryTypeModel(id: typeId, name: typeName)
+            : null,
+      );
     } on DatabaseException catch (e) {
       throw DBaseException(
-        'Ошибка при получении категории из базы данных: ${e.toString()}',
+        'Ошибка при получении категории: ${e.toString()}',
       );
     }
   }
 
   Future<CategoryModel> create({
     required String name,
+    required String typeId,
     required String icon,
   }) async {
     final uuid = Uuid();
@@ -53,6 +83,7 @@ class CategoryRepository {
       'name': name,
       'name_lower': name.toLowerCase(),
       'icon': icon,
+      'type_id': typeId,
     };
 
     try {
@@ -62,9 +93,7 @@ class CategoryRepository {
         conflictAlgorithm: ConflictAlgorithm.abort,
       );
 
-      final result = await getById(id: id);
-
-      return CategoryModel.fromJson(result.toJson());
+      return getById(id: id);
     } on DatabaseException catch (e) {
       if (e.isUniqueConstraintError()) {
         throw ConflictException('Категория с таким именем уже существует');
@@ -79,6 +108,7 @@ class CategoryRepository {
   Future<CategoryModel> update({
     required String id,
     String? name,
+    String? typeId,
     String? icon,
   }) async {
     final values = <String, Object?>{};
@@ -89,6 +119,9 @@ class CategoryRepository {
     }
     if (icon != null) {
       values['icon'] = icon;
+    }
+    if (typeId != null) {
+      values['type_id'] = typeId;
     }
 
     try {
@@ -102,9 +135,8 @@ class CategoryRepository {
       if (count == 0) {
         throw NotFoundException('Категория с id $id не найдена');
       }
-      final result = await getById(id: id);
 
-      return CategoryModel.fromJson(result.toJson());
+      return getById(id: id);
     } on DatabaseException catch (e) {
       if (e.isUniqueConstraintError()) {
         throw ConflictException(

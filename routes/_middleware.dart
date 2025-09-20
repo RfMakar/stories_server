@@ -5,11 +5,13 @@ import 'package:dotenv/dotenv.dart';
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/data/database_sevice.dart';
 import 'package:stories_server/repositories/category_repository.dart';
+import 'package:stories_server/repositories/category_type_repository.dart';
 import 'package:stories_server/repositories/search_repository.dart';
 import 'package:stories_server/repositories/story_categories_repository.dart';
 import 'package:stories_server/repositories/story_popular_repository.dart';
 import 'package:stories_server/repositories/story_repository.dart';
 import 'package:stories_server/services/category_service.dart';
+import 'package:stories_server/services/category_type_service.dart';
 import 'package:stories_server/services/search_service.dart';
 import 'package:stories_server/services/story_category_service.dart';
 import 'package:stories_server/services/story_popular_service.dart';
@@ -23,13 +25,18 @@ bool _initialized = false;
 final _categoryRepository = CategoryRepository(_databaseService);
 final _categoryService = CategoryService(_categoryRepository);
 
+final _categoryTypeRepository = CategoryTypeRepository(_databaseService);
+final _categoryTypeService = CategoryTypeService(_categoryTypeRepository);
+
 final _storyRepository = StoryRepository(_databaseService);
 final _storeService = StoryService(_storyRepository);
 
 final _storyCategoriesRepository = StoryCategoriesRepository(_databaseService);
-final _storeCategoriesService = StoryCategoryService(_storyCategoriesRepository);
+final _storeCategoriesService =
+    StoryCategoryService(_storyCategoriesRepository);
 
-final _storyPopularRepository = StoryPopularRepository(_databaseService, _storyRepository);
+final _storyPopularRepository =
+    StoryPopularRepository(_databaseService, _storyRepository);
 final _storyPopularService = StoryPopularService(_storyPopularRepository);
 
 final _searchRepository = SearchRepository(_databaseService, _storyRepository);
@@ -46,6 +53,9 @@ Handler middleware(Handler handler) {
       .use(_errorHandlingMiddleware())
       .use(provider<CategoryService>(
         (_) => _categoryService,
+      ))
+      .use(provider<CategoryTypeService>(
+        (_) => _categoryTypeService,
       ))
       .use(provider<StoryService>(
         (_) => _storeService,

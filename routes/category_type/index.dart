@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
-import 'package:stories_server/services/category_service.dart';
+import 'package:stories_server/services/category_type_service.dart';
 
 Future<Response> onRequest(RequestContext context) async {
   switch (context.request.method) {
@@ -23,47 +23,39 @@ Future<Response> onRequest(RequestContext context) async {
 }
 
 Future<Response> _get(RequestContext context) async {
-  final _categoryService = await context.read<CategoryService>();
-  final _categories = await _categoryService.getCategories();
+  final _categoryTypeService = await context.read<CategoryTypeService>();
+  final _categoriesTypes = await _categoryTypeService.getCategoriesTypes();
 
   return Response.json(
-    body: _categories.map((e) => e).toList(),
+    body: _categoriesTypes.map((e) => e).toList(),
   );
 }
 
 Future<Response> _post(RequestContext context) async {
-  final _categoryService = await context.read<CategoryService>();
+  final _categoryTypeService = await context.read<CategoryTypeService>();
 
   final formData = await context.request.formData();
   final name = formData.fields['name'];
-  final typeId = formData.fields['type_id'];
-  final icon = formData.files['icon'];
 
-  final isValidateData = name == null ||
-      name.trim().isEmpty ||
-      icon == null ||
-      typeId == null ||
-      typeId.trim().isEmpty;
+  final isValidateData = name == null || name.trim().isEmpty;
 
   if (isValidateData) {
-    throw ValidationException("Обязательные поля: 'name', 'icon', 'type_id'");
+    throw ValidationException("Обязательные поля: 'name' ");
   }
 
-  final _category = await _categoryService.createCategory(
+  final _categoryType = await _categoryTypeService.createCategoryType(
     name: name,
-    typeId: typeId,
-    icon: icon,
   );
 
   return Response.json(
     statusCode: HttpStatus.created,
-    body: _category,
+    body: _categoryType,
   );
 }
 
 Future<Response> _delete(RequestContext context) async {
-  final _categoryService = await context.read<CategoryService>();
-  await _categoryService.deleteCategories();
+  final _categoryTypeService = await context.read<CategoryTypeService>();
+  await _categoryTypeService.deleteCategoriesTypes();
 
   return Response.json(
     statusCode: HttpStatus.noContent,

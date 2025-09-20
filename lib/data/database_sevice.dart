@@ -41,11 +41,20 @@ class DatabaseService {
       ''');
 
       await _db.execute('''
+      CREATE TABLE IF NOT EXISTS category_types (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE
+      );
+      ''');
+
+      await _db.execute('''
       CREATE TABLE IF NOT EXISTS categories (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL UNIQUE,
       name_lower TEXT NOT NULL,
-      icon TEXT NOT NULL
+      icon TEXT NOT NULL,
+      type_id TEXT NOT NULL,
+      FOREIGN KEY (type_id) REFERENCES category_types(id) ON DELETE CASCADE
       );
       ''');
 
@@ -67,7 +76,7 @@ class DatabaseService {
       FOREIGN KEY (story_id) REFERENCES stories(id) ON DELETE CASCADE
       );
       ''');
-      await _db.execute('PRAGMA user_version = 1');
+      await _db.execute('PRAGMA user_version = 3');
     }
 
     if (currentVersion == 1) {
@@ -75,6 +84,63 @@ class DatabaseService {
       await _db.execute('ALTER TABLE stories ADD COLUMN audio TEXT;');
       await _db.execute('PRAGMA user_version = 2');
     }
+
+    if (currentVersion == 2) {
+      // Миграция: создаём таблицу типов категорий и добавляем связь
+      await _db.execute('''
+      CREATE TABLE IF NOT EXISTS category_types (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE
+      );
+      ''');
+
+      await _db.execute('''
+      ALTER TABLE categories ADD COLUMN type_id TEXT REFERENCES category_types(id) ON DELETE CASCADE;
+      ''');
+
+      await _db.execute('PRAGMA user_version = 3');
+    }
+    ///
+    ///
+    ///
+    ///
+    //Прис след миграции сделать чтобы было каскадное удаление категории при удалении типа категории
+    //   if (currentVersion == 3) {
+    //     // 1. Создаём таблицу типов категорий
+    //     await _db.execute('''
+    //   CREATE TABLE IF NOT EXISTS category_types (
+    //     id TEXT PRIMARY KEY,
+    //     name TEXT NOT NULL UNIQUE
+    //   );
+    // ''');
+
+    //     // 2. Создаём новую таблицу categories с type_id и каскадным удалением
+    //     await _db.execute('''
+    //   CREATE TABLE categories_new (
+    //     id TEXT PRIMARY KEY,
+    //     name TEXT NOT NULL UNIQUE,
+    //     name_lower TEXT NOT NULL,
+    //     icon TEXT NOT NULL,
+    //     type_id TEXT,
+    //     FOREIGN KEY (type_id) REFERENCES category_types(id) ON DELETE CASCADE
+    //   );
+    // ''');
+
+    //     // 3. Переносим данные из старой categories (type_id пока будет NULL)
+    //     await _db.execute('''
+    //   INSERT INTO categories_new (id, name, name_lower, icon)
+    //   SELECT id, name, name_lower, icon FROM categories;
+    // ''');
+
+    //     // 4. Удаляем старую таблицу
+    //     await _db.execute('DROP TABLE categories;');
+
+    //     // 5. Переименовываем новую таблицу
+    //     await _db.execute('ALTER TABLE categories_new RENAME TO categories;');
+
+    //     // 6. Обновляем версию
+    //     await _db.execute('PRAGMA user_version = 4');
+    //   }
   }
 
   Database get db => _db;

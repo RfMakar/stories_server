@@ -4,7 +4,7 @@ import 'package:stories_server/models/category_model.dart';
 import 'package:stories_server/repositories/category_repository.dart';
 
 class CategoryService {
-  final CategoryRepository _categoryRepository; 
+  final CategoryRepository _categoryRepository;
   CategoryService(this._categoryRepository);
 
   Future<List<CategoryModel>> getCategories() async {
@@ -20,6 +20,7 @@ class CategoryService {
 
   Future<CategoryModel> createCategory({
     required String name,
+    required String typeId,
     required UploadedFile icon,
   }) async {
     //сохранение картинки и получение пути к ней
@@ -27,6 +28,7 @@ class CategoryService {
 
     final _createCategory = await _categoryRepository.create(
       name: name,
+      typeId: typeId,
       icon: iconPathSave,
     );
     return _createCategory;
@@ -35,6 +37,7 @@ class CategoryService {
   Future<CategoryModel?> updateCategory({
     required String id,
     String? name,
+    String? typeId,
     UploadedFile? icon,
   }) async {
     //Удаляет старую иконку с сервера
@@ -47,6 +50,7 @@ class CategoryService {
     final _category = await _categoryRepository.update(
       id: id,
       name: name,
+      typeId: typeId,
       icon: iconPathSave,
     );
     return _category;
