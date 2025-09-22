@@ -3,7 +3,7 @@ import 'package:stories_server/models/category_type_model.dart';
 
 part 'category_model.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(includeIfNull: false)
 class CategoryModel {
   final String id;
   final String name;

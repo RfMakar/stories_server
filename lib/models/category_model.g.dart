@@ -22,5 +22,5 @@ Map<String, dynamic> _$CategoryModelToJson(CategoryModel instance) =>
       'id': instance.id,
       'name': instance.name,
       'icon': instance.icon,
-      'categoryType': instance.categoryType,
+      if (instance.categoryType case final value?) 'categoryType': value,
     };

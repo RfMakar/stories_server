@@ -16,6 +16,10 @@ class CategoryTypeService {
     return _categoryType;
   }
 
+  Future<List<CategoryTypeModel>> getCategoryTypesWithCategories() {
+    return _categoryTypeRepository.getAllWithCategories();
+  }
+
   Future<CategoryTypeModel> createCategoryType({required String name}) async {
     final _createCategoryType =
         await _categoryTypeRepository.create(name: name);

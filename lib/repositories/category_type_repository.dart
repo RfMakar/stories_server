@@ -1,6 +1,7 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:stories_server/core/exceptions/app_exceptions.dart';
 import 'package:stories_server/data/database_sevice.dart';
+import 'package:stories_server/models/category_model.dart';
 import 'package:stories_server/models/category_type_model.dart';
 import 'package:uuid/uuid.dart';
 
@@ -40,6 +41,53 @@ class CategoryTypeRepository {
       );
     }
   }
+
+  Future<List<CategoryTypeModel>> getAllWithCategories() async {
+  try {
+    final result = await _databaseService.db.rawQuery('''
+      SELECT 
+        ct.id   AS type_id,
+        ct.name AS type_name,
+        c.id    AS category_id,
+        c.name  AS category_name,
+        c.icon  AS category_icon
+      FROM category_types ct
+      LEFT JOIN categories c ON c.type_id = ct.id
+      ORDER BY ct.name, c.name;
+    ''');
+
+    final Map<String, CategoryTypeModel> typeMap = {};
+
+    for (final row in result) {
+      final typeId = row['type_id'] as String;
+
+      if (!typeMap.containsKey(typeId)) {
+        typeMap[typeId] = CategoryTypeModel(
+          id: typeId,
+          name: row['type_name'] as String,
+          categories: [],
+        );
+      }
+
+      if (row['category_id'] != null) {
+        typeMap[typeId]!.categories?.add(
+          CategoryModel(
+            id: row['category_id'] as String,
+            name: row['category_name'] as String,
+            icon: row['category_icon'] as String,
+          ),
+        );
+      }
+    }
+
+    return typeMap.values.toList();
+  } on DatabaseException catch (e) {
+    throw DBaseException(
+      'Ошибка при получении типов категорий с категориями: ${e.toString()}',
+    );
+  }
+}
+
 
   Future<CategoryTypeModel> create({required String name}) async {
     final uuid = Uuid();

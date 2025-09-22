@@ -21,13 +21,17 @@ Future<Response> onRequest(RequestContext context) async {
       );
   }
 }
-
 Future<Response> _get(RequestContext context) async {
-  final _categoryTypeService = await context.read<CategoryTypeService>();
-  final _categoriesTypes = await _categoryTypeService.getCategoriesTypes();
+  final categoryTypeService = context.read<CategoryTypeService>();
+  final withCategories =
+      context.request.uri.queryParameters['withCategories'] == 'true';
+
+  final categoryTypes = withCategories
+      ? await categoryTypeService.getCategoryTypesWithCategories()
+      : await categoryTypeService.getCategoriesTypes();
 
   return Response.json(
-    body: _categoriesTypes.map((e) => e).toList(),
+    body: categoryTypes.map((e) => e.toJson()).toList(),
   );
 }
 
