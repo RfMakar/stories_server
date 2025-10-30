@@ -21,35 +21,56 @@ Stories Server — backend-приложение на Dart Frog, разработ
 ## Архитектура и структура проекта
 
 ```
-📦lib
- ┣ 📂core
- ┃ ┣ 📂exceptions
- ┃ ┃ ┗ 📜app_exceptions.dart
- ┃ ┗ 📂utils
- ┃ ┃ ┗ 📜file_service.dart
- ┣ 📂data
- ┃ ┗ 📜database_sevice.dart
- ┣ 📂models
- ┃ ┣ 📜category_model.dart
- ┃ ┣ 📜category_model.g.dart
- ┃ ┣ 📜category_type_model.dart
- ┃ ┣ 📜category_type_model.g.dart
- ┃ ┣ 📜story_model.dart
- ┃ ┗ 📜story_model.g.dart
- ┣ 📂repositories
- ┃ ┣ 📜category_repository.dart
- ┃ ┣ 📜category_type_repository.dart
- ┃ ┣ 📜search_repository.dart
- ┃ ┣ 📜story_categories_repository.dart
- ┃ ┣ 📜story_popular_repository.dart
- ┃ ┗ 📜story_repository.dart
- ┗ 📂services
- ┃ ┣ 📜category_service.dart
- ┃ ┣ 📜category_type_service.dart
- ┃ ┣ 📜search_service.dart
- ┃ ┣ 📜story_category_service.dart
- ┃ ┣ 📜story_popular_service.dart
- ┃ ┗ 📜story_service.dart
+lib
+ ┣ core
+ ┃ ┣ exceptions
+ ┃ ┃ ┗ app_exceptions.dart
+ ┃ ┗ utils
+ ┃ ┃ ┗ file_service.dart
+ ┣ data
+ ┃ ┗ database_sevice.dart
+ ┣ models
+ ┃ ┣ category_model.dart
+ ┃ ┣ category_model.g.dart
+ ┃ ┣ category_type_model.dart
+ ┃ ┣ category_type_model.g.dart
+ ┃ ┣ story_model.dart
+ ┃ ┗ story_model.g.dart
+ ┣ repositories
+ ┃ ┣ category_repository.dart
+ ┃ ┣ category_type_repository.dart
+ ┃ ┣ search_repository.dart
+ ┃ ┣ story_categories_repository.dart
+ ┃ ┣ story_popular_repository.dart
+ ┃ ┗ story_repository.dart
+ ┗ services
+ ┃ ┣ category_service.dart
+ ┃ ┣ category_type_service.dart
+ ┃ ┣ search_service.dart
+ ┃ ┣ story_category_service.dart
+ ┃ ┣ story_popular_service.dart
+ ┃ ┗ story_service.dart
+ routes
+ ┣ category
+ ┃ ┣ [categoryId].dart
+ ┃ ┗ index.dart
+ ┣ category_type
+ ┃ ┣ [typeId].dart
+ ┃ ┗ index.dart
+ ┣ search
+ ┃ ┗ index.dart
+ ┣ story
+ ┃ ┣ [storyId]
+ ┃ ┃ ┣ categories
+ ┃ ┃ ┃ ┗ [categoryId].dart
+ ┃ ┃ ┣ audio.dart
+ ┃ ┃ ┗ index.dart
+ ┃ ┗ index.dart
+ ┣ story_popular
+ ┃ ┣ [storyId].dart
+ ┃ ┗ index.dart
+ ┣ _middleware.dart
+ ┗ index.dart
 ```
 
 ## Технологии:
@@ -65,11 +86,8 @@ Stories Server — backend-приложение на Dart Frog, разработ
 ## Связанные репозитории:
 
 [Серверное приложение](https://github.com/RfMakar/stories_server)  
-
 [Клиентское приложение](https://github.com/RfMakar/stories_client)  
-
 [Админ приложение](https://github.com/RfMakar/stories_admin)  
-
 [Пакет данных](https://github.com/RfMakar/stories_data) 
 
 ## Автор
