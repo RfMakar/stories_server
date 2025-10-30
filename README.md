@@ -64,17 +64,13 @@ Stories Server — backend-приложение на Dart Frog, разработ
 
 ## Связанные репозитории:
 
-Серверное приложение:
-[Stroies_client](https://github.com/RfMakar/stories_server)  
+[Серверное приложение](https://github.com/RfMakar/stories_server)  
 
-Клиентское приложение:
-[Stroies_client](https://github.com/RfMakar/stories_client)  
+[Клиентское приложение](https://github.com/RfMakar/stories_client)  
 
-Админ приложение:
-[Stroies_admin](https://github.com/RfMakar/stories_admin)  
+[Админ приложение](https://github.com/RfMakar/stories_admin)  
 
-Пакет данных:
-[Stroies_data](https://github.com/RfMakar/stories_data) 
+[Пакет данных](https://github.com/RfMakar/stories_data) 
 
 ## Автор
 **Максим Макарчук**
