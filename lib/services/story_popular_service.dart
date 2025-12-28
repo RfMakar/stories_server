@@ -38,10 +38,10 @@ class StoryPopularService {
 
   Future<List<StoryModel>> getStoriesTopToMonth() async {
     final now = DateTime.now();
-    final startOfWeek = now.subtract(const Duration(days: 30));
+    final startOfMonth = now.subtract(const Duration(days: 30));
 
     final _stories = await _storyPopularRepository.topPeriod(
-      start: startOfWeek,
+      start: startOfMonth,
       end: now,
       take: 7,
     );
